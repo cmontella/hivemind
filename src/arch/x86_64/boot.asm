@@ -1,4 +1,5 @@
 global start
+extern long_mode_start
 
 section .text
 bits 32
@@ -14,7 +15,13 @@ start:
     call set_up_page_tables
     call enable_paging
 
-    ; print `ok` to screen
+    ; load the 64-bit GDT
+    lgdt [gdt64.pointer]
+
+    ; load long mode
+    jmp gdt64.code:long_mode_start
+
+    ; print `OK` to screen
     mov dword [0xb8000], 0x2f4b2f4f
     hlt
 
@@ -57,7 +64,7 @@ set_up_page_tables:
 ; 4 - Finally enable paging
 
 enable_paging:
-    ; 1- load P4 to CR3 register to access P4 table
+    ; 1 - load P4 to CR3 register to access P4 table
     mov eax, p4_table
     mov cr3, eax
 
@@ -66,13 +73,13 @@ enable_paging:
     or eax, 1 << 5
     mov cr4, eax
 
-    ; 3- set long mode bit in EFER Model Specific Register (MSR)
+    ; 3 - set long mode bit in EFER Model Specific Register (MSR)
     mov ecx, 0xC0000080
     rdmsr
     or eax, 1 << 8
     wrmsr
 
-    ; 4- enable paging in the cr0 register
+    ; 4 - enable paging in the cr0 register
     mov eax, cr0
     or eax, 1 << 31
     mov cr0, eax
@@ -180,3 +187,13 @@ p2_table:
 stack_bottom:
     resb 64
 stack_top:
+
+; Create a Global Descriptor Table (GDT)
+section .rodata
+gdt64:
+    dq 0 ; first entry is zero
+.code: equ $ - gdt64
+    dq (1 << 43) | (1 << 44) | (1 << 47) | (1 << 53)
+.pointer:
+    dw $ - gdt64 - 1
+    dq gdt64
