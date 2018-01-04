@@ -18,19 +18,6 @@ start:
     mov dword [0xb8000], 0x2f4b2f4f
     hlt
 
-; Create a stack
-section .bss
-align 4096
-p4_table:
-    resb 4096
-p3_table:
-    resb 4096
-p2_table:
-    resb 4096
-stack_bottom:
-    resb 64
-stack_top:
-
 ; Link P4 first entry to the P3 table, and the P3 first entry to the P2 table
 
 set_up_page_tables:
@@ -48,13 +35,13 @@ set_up_page_tables:
     ; physical address -> virtual 
     ; We do this in a loop, going through each one until
     ; we reach 512
-    mov exc, 0  ; a counter for our loop
+    mov ecx, 0  ; a counter for our loop
 
-.map_p2_table
+.map_p2_table:
     ; map ecx-th P2 entry to a page that starts at address 2MiB*ecx
     mov eax, 0x200000               ; 2MiB
     mul ecx                         ; start address of ecx-th page
-    or eax 0b10000011               ; present + writable + huge
+    or eax, 0b10000011              ; present + writable + huge
     mov [p2_table + ecx * 8], eax   ; map ecx-th entry
 
     inc ecx                         ; increase counter
@@ -116,7 +103,7 @@ check_multiboot:
     cmp eax, 0x36d76289
     jne .no_multiboot
     ret
-.no_multiboot
+.no_multiboot:
     mov al, "0"
     jmp error
 
@@ -180,3 +167,16 @@ check_long_mode:
 .no_long_mode:
     mov al, "2"
     jmp error
+
+; Create a stack
+section .bss
+align 4096
+p4_table:
+    resb 4096
+p3_table:
+    resb 4096
+p2_table:
+    resb 4096
+stack_bottom:
+    resb 64
+stack_top:
