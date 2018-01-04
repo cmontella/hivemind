@@ -10,9 +10,87 @@ start:
     call check_cpuid
     call check_long_mode
 
+    ; Set up paging
+    call set_up_page_tables
+    call enable_paging
+
     ; print `ok` to screen
     mov dword [0xb8000], 0x2f4b2f4f
     hlt
+
+; Create a stack
+section .bss
+align 4096
+p4_table:
+    resb 4096
+p3_table:
+    resb 4096
+p2_table:
+    resb 4096
+stack_bottom:
+    resb 64
+stack_top:
+
+; Link P4 first entry to the P3 table, and the P3 first entry to the P2 table
+
+set_up_page_tables:
+    ; map first P4 entry to P3 table
+    mov eax, p3_table
+    or eax, 0b11 ; present + writable
+    mov [p4_table], eax
+
+    ; map first P3 entry to P2 table
+    mov eax, p2_table
+    or eax, 0b11 ; present + writable
+    mov [p3_table], eax
+
+    ; Identity map the first gigabyte of kernel
+    ; physical address -> virtual 
+    ; We do this in a loop, going through each one until
+    ; we reach 512
+    mov exc, 0  ; a counter for our loop
+
+.map_p2_table
+    ; map ecx-th P2 entry to a page that starts at address 2MiB*ecx
+    mov eax, 0x200000               ; 2MiB
+    mul ecx                         ; start address of ecx-th page
+    or eax 0b10000011               ; present + writable + huge
+    mov [p2_table + ecx * 8], eax   ; map ecx-th entry
+
+    inc ecx                         ; increase counter
+    cmp ecx, 512                    ; if counter is 512, the P2 table is full
+    jne .map_p2_table               ; map the next entry
+
+    ret
+
+; eable paging
+; 1 - write address of p4 table to CR3 register
+; 2 - enable Physical Address Extension (PAE)
+; 3 - Set long mode bit in EFER register
+; 4 - Finally enable paging
+
+enable_paging:
+    ; 1- load P4 to CR3 register to access P4 table
+    mov eax, p4_table
+    mov cr3, eax
+
+    ; 2 - enable PAE-flag in CR4
+    mov eax, cr4
+    or eax, 1 << 5
+    mov cr4, eax
+
+    ; 3- set long mode bit in EFER Model Specific Register (MSR)
+    mov ecx, 0xC0000080
+    rdmsr
+    or eax, 1 << 8
+    wrmsr
+
+    ; 4- enable paging in the cr0 register
+    mov eax, cr0
+    or eax, 1 << 31
+    mov cr0, eax
+
+    ret    
 
 ; -------- Error Check Functions --------
 
