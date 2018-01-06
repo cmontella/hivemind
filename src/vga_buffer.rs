@@ -1,3 +1,12 @@
+use core::fmt;
+use volatile::Volatile;
+use core::ptr::Unique;
+use spin::Mutex;
+
+const BUFFER_HEIGHT: usize = 25;
+const BUFFER_WIDTH: usize = 80;
+const VGA_ADDRESS: usize = 0xb8000;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
@@ -31,8 +40,6 @@ impl ColorCode {
     }
 }
 
-// We represent the screen as a matrix of characters 80 wide by 25 height
-
 #[derive(Debug, Clone, Copy)]
 #[repr(C)] // Lay out struct as in C for correct field ordering.
 struct ScreenChar {
@@ -40,22 +47,15 @@ struct ScreenChar {
     color_code: ColorCode,
 }
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
-
 // Volatile tells rust that there are side effects. We use it to make sure Rust
 // does not optimize away printing screen characters, which are the side 
 // effect.
-
-use volatile::Volatile;
 
 struct Buffer {
     chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
-// Create a writer type that writes to the screen.
-
-use core::ptr::Unique;
+// Create a screen writer type that writes character bytes to a buffer.
 
 pub struct ScreenWriter {
     column_position: usize,
@@ -68,7 +68,7 @@ impl ScreenWriter {
         match byte {
             // Move to a new line on a new line char
             b'\n' => self.new_line(),
-            // Place a char in the screen buffer on for any other byte
+            // Place a char in the screen buffer for any other byte
             byte => {
                 // Insert a new line if we've reached the end of the screen
                 if self.column_position >= BUFFER_WIDTH {
@@ -117,12 +117,9 @@ impl ScreenWriter {
             self.buffer().chars[row][col].write(blank);
         }
     }
-
 }
 
 // We implement a fmt:Write for the ScreenWriter to support rust macros
-
-use core::fmt;
 
 impl fmt::Write for ScreenWriter {
     fn write_str(&mut self, string: &str) -> fmt::Result {
@@ -133,8 +130,35 @@ impl fmt::Write for ScreenWriter {
     }
 }
 
-pub static Writer: ScreenWriter = ScreenWriter {
+pub static SCREEN_WRITER: Mutex<ScreenWriter> = Mutex::new(ScreenWriter {
     column_position: 0,
-    color_code: ColorCode::new(Color::LightGreen, Color::Black),
-    buffer: unsafe { Unique::new_unchecked(0xb8000 as *mut _) },
-};
+    color_code: ColorCode::new(Color::LightBlue, Color::Black),
+    buffer: unsafe { Unique::new_unchecked(VGA_ADDRESS as *mut _) },
+});
+
+// And now we have everything we need to implement the print! and println! macros
+
+macro_rules! print {
+    ($($arg:tt)*) => ({
+        $crate::vga_buffer::print(format_args!($($arg)*));
+    });
+}
+
+macro_rules! println {
+    ($fmt:expr) => (print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
+}
+
+// Evaluate arguments before locking the SCREEN_WRITER to avoid a deadlock
+// e.g. println!("{}", { println!("inner"); "outer" });
+pub fn print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    SCREEN_WRITER.lock().write_fmt(args).unwrap();
+}
+
+// A utility function to clear the screen of all characters
+pub fn clear_screen() {
+    for _ in 0..BUFFER_HEIGHT {
+        println!("");
+    }
+}
