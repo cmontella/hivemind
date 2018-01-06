@@ -40,7 +40,7 @@ impl AreaFrameAllocator {
 
     fn choose_next_area(&mut self) {
         self.current_area = self.areas.clone().filter(|area| {
-            let address = area.base_addr + area.length + 1;
+            let address = area.base_addr + area.length - 1;
             Frame::containing_address(address as usize) >= self.next_free_frame
         }).min_by_key(|area| area.base_addr);
 
@@ -58,12 +58,12 @@ impl FrameAllocator for AreaFrameAllocator {
     fn allocate_frame(&mut self) -> Option<Frame> {
         // If there is a free area, return it
         if let Some(area) = self.current_area {
-            // Close the frame to return it if it's free
+            // Clone the frame to return it if it's free
             let frame = Frame { number: self.next_free_frame.number };
 
             // the last frame of the current area
             let current_area_last_frame = {
-                let address = area.base_addr + area.length -1;
+                let address = area.base_addr + area.length - 1;
                 Frame::containing_address(address as usize)
             };
 
@@ -72,9 +72,11 @@ impl FrameAllocator for AreaFrameAllocator {
                 self.choose_next_area();
             // If the frame is used by the kernel, move to the next frame after the kernel
             } else if frame >= self.kernel_start && frame <= self.kernel_end {
+                println!("Kernel");
                 self.next_free_frame = Frame { number: self.kernel_end.number + 1 };
             // If the frame is used by multiboot, move to the next frame after multiboot                
             } else if frame >= self.multiboot_start && frame <= self.multiboot_end {
+                println!("Multiboot");
                 self.next_free_frame = Frame { number: self.multiboot_end.number + 1 };
             // Else, the frame is unused and we can use it
             } else {
@@ -85,6 +87,7 @@ impl FrameAllocator for AreaFrameAllocator {
 
         // If there are no more free areas, return None
         } else {
+            println!("No more free areas!!!");
             None
         }
     }
