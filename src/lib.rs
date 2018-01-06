@@ -47,8 +47,11 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
     /* ------- Test Memory Allocation ------- */
     let mut frame_allocator = memory::AreaFrameAllocator::new(kernel_start as usize, kernel_end as usize,
                                                               multiboot_start, multiboot_end, memory_map_tag.memory_areas());
-    for i in 0..3000 {
-        frame_allocator.allocate_frame();
+    for i in 0.. {
+        if let None = frame_allocator.allocate_frame() {
+            println!("allocated {} frames", i);
+            break;
+        }
     }
 
     println!("Boot complete");
