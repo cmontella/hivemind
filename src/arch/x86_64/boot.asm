@@ -176,7 +176,7 @@ check_long_mode:
     jmp error
 
 ; Create a stack
-section .bss ; basic service set, contains 0 initialized data, like the stack
+section .bss ; block started by symbol, contains 0 initialized data, like the stack
 align 4096
 p4_table:
     resb 4096
