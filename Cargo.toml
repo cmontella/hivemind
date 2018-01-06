@@ -7,4 +7,5 @@ authors = ["Corey Montella <cmontella@live.com"]
 crate-type = ["staticlib"]
 
 [dependencies]
+volatile = "0.1.0"
 rlibc = "1.0"

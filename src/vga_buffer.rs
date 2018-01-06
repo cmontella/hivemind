@@ -43,8 +43,14 @@ struct ScreenChar {
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
+// Volatile tells rust that there are side effects. We use it to make sure Rust
+// does not optimize away printing screen characters, which are the side 
+// effect.
+
+use volatile::Volatile;
+
 struct Buffer {
-    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 // Create a writer type that writes to the screen.
@@ -73,10 +79,10 @@ impl Writer {
                 let color_code = self.color_code;
 
                 // Place the character into the buffer at the position (row,col)
-                self.buffer().chars[row][col] = ScreenChar {
+                self.buffer().chars[row][col].write(ScreenChar {
                   ascii_character: byte,
                   color_code: color_code,  
-                };
+                });
 
                 self.column_position += 1;
             }
