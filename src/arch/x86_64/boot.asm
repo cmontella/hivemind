@@ -5,6 +5,8 @@ section .text
 bits 32
 start:
     mov esp, stack_top
+    ; Move Multiboot info pointer to edi so we can use it in Rust
+    mov edi, ebx 
 
     ; Check feature support
     call check_multiboot
@@ -21,8 +23,6 @@ start:
     ; load long mode
     jmp gdt64.code:long_mode_start
 
-    ; print `OK` to screen
-    mov dword [0xb8000], 0x2f4b2f4f
     hlt
 
 ; Link P4 first entry to the P3 table, and the P3 first entry to the P2 table
