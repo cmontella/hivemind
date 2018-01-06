@@ -11,7 +11,7 @@ mod vga_buffer;
 #[no_mangle]
 pub extern fn hivemind_entry() {
 
-    vga_buffer::print_something();
+    
     loop{}
 }
 
