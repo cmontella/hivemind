@@ -2,9 +2,11 @@
 #![no_std]
 extern crate rlibc;
 
+mod vga_buffer;
+
 #[no_mangle]
 pub extern fn hivemind_entry() {
-    let hello = b"Hello World";
+    let hello = b"Hivemind";
     let color_byte = 0x1f;
 
     let mut hello_colored = [color_byte; 24];
@@ -12,7 +14,7 @@ pub extern fn hivemind_entry() {
         hello_colored[i*2] = *char_byte;
     }
 
-    let buffer_ptr = (0xb8000 + 1988) as *mut _;
+    let buffer_ptr = (0xb8000) as *mut _;
     unsafe { *buffer_ptr = hello_colored };
 
     loop{}
