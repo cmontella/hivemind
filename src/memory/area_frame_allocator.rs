@@ -72,11 +72,9 @@ impl FrameAllocator for AreaFrameAllocator {
                 self.choose_next_area();
             // If the frame is used by the kernel, move to the next frame after the kernel
             } else if frame >= self.kernel_start && frame <= self.kernel_end {
-                println!("Kernel");
                 self.next_free_frame = Frame { number: self.kernel_end.number + 1 };
             // If the frame is used by multiboot, move to the next frame after multiboot                
             } else if frame >= self.multiboot_start && frame <= self.multiboot_end {
-                println!("Multiboot");
                 self.next_free_frame = Frame { number: self.multiboot_end.number + 1 };
             // Else, the frame is unused and we can use it
             } else {
@@ -87,7 +85,6 @@ impl FrameAllocator for AreaFrameAllocator {
 
         // If there are no more free areas, return None
         } else {
-            println!("No more free areas!!!");
             None
         }
     }
