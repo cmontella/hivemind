@@ -57,7 +57,7 @@ set_up_page_tables:
 
     ret
 
-; eable paging
+; Enable paging
 ; 1 - write address of p4 table to CR3 register
 ; 2 - enable Physical Address Extension (PAE)
 ; 3 - Set long mode bit in EFER register
@@ -86,7 +86,7 @@ enable_paging:
 
     ret    
 
-; -------- Error Check Functions --------
+; -------- Compatibility Check Functions --------
 
 ; Prints an error code and halts the processor
 ; Error Codes:
@@ -176,7 +176,7 @@ check_long_mode:
     jmp error
 
 ; Create a stack
-section .bss
+section .bss ; basic service set, contains 0 initialized data, like the stack
 align 4096
 p4_table:
     resb 4096
@@ -189,7 +189,7 @@ stack_bottom:
 stack_top:
 
 ; Create a Global Descriptor Table (GDT)
-section .rodata
+section .rodata ;read only data
 gdt64:
     dq 0 ; first entry is zero
 .code: equ $ - gdt64
