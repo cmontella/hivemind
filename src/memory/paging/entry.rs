@@ -20,9 +20,9 @@ impl Entry {
 
     // Extract phsyical address. If it's present, we return the frame and mask
     // bits 12-51.
-    pub fn pointed_frame($self) -> Option<Frame> {
+    pub fn pointed_frame(&self) -> Option<Frame> {
         if self.flags().contains(PRESENT) {
-            Some(Frame::containing_address(self.0 as usize & 0x000fffff_fffff000)
+            Some(Frame::containing_address(self.0 as usize & 0x000fffff_fffff000))
         } else {
             None
         }

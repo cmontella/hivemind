@@ -1,4 +1,4 @@
-use memory::PAGE_SIZE
+use memory::PAGE_SIZE;
 
 mod entry;
 mod table;
@@ -12,5 +12,5 @@ pub type VirtualAddress = usize;
 
 // A virtual page
 pub struct Page {
-    number: usize;
+    number: usize,
 }
