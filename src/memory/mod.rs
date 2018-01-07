@@ -18,7 +18,7 @@ impl Frame {
     }
 
     fn start_address(&self) -> usize {
-        self.number * PAGE_SIZE;
+        self.number * PAGE_SIZE
     }
 }
 
