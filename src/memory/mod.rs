@@ -4,8 +4,8 @@ mod area_frame_allocator;
 
 pub const PAGE_SIZE: usize = 4096;
 
-// A Frame is identified by a monotonically increasing number, which we will
-// map to a physical memory location.
+// A physical frame is identified by a monotonically increasing number, which 
+// we will map to a physical memory location.
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Frame {
@@ -15,6 +15,10 @@ pub struct Frame {
 impl Frame {
     fn containing_address(address: usize) -> Frame {
         Frame { number: address / PAGE_SIZE }
+    }
+
+    fn start_address(&self) -> usize {
+        self.number * PAGE_SIZE;
     }
 }
 
