@@ -32,6 +32,7 @@ impl HierarchicalLevel for Level3 {
 impl HierarchicalLevel for Level2 {
     type NextLevel = Level1;
 }
+
 // Level 1 tables don't get this trait, since we want to restrict their
 // ability to access next_table().
 
@@ -65,12 +66,28 @@ impl<L> Table<L> where L: HierarchicalLevel {
         }
     }
 
+    // A page table owns all of its subtables
+
     pub fn next_table<'a>(&'a self, index: usize) -> Option<&'a Table<L::NextLevel>> {
         self.next_table_address(index).map(|address| unsafe { &*(address as *const _)})
     }
 
     pub fn next_table_mut<'a>(&'a self, index: usize) -> Option<&'a mut Table<L::NextLevel>> {
         self.next_table_address(index).map(|address| unsafe { &mut *(address as *mut _)})
+    }
+
+    // Return the next table, if it exists, or create a new one
+
+    pub fn next_table_create<A>(&mut self, index: usize, allocator: &mut A) -> &mut Table<L::NextLevel> 
+        where A: FrameAllocator {
+
+        if self.next_table(index).is_none() {
+            assert!(!self.entries[index].flags().contains(HUGE_PAGE),"mapping code does not support huge pages");
+            let frame = allocator.allocate_frame().expect("no frames available");
+            self.entries[index].set(frame, PRESENT | WRITABLE);
+            self.next_table_mut(index).unwrap().zero();
+        }
+        self.next_table_mut(index).unwrap()
     }
 
 }
@@ -91,4 +108,5 @@ impl<L> IndexMut<usize> for Table<L> where L: TableLevel {
     }
 }
 
+// The 511th entry of the active P4 table must always be mapped to the active P4 table itself.
 pub const P4: *mut Table<Level4> = 0xffffffff_fffff000 as *mut _;
