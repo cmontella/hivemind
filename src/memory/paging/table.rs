@@ -2,6 +2,7 @@ use memory::paging::entry::*;
 use memory::paging::ENTRY_COUNT;
 use core::ops::{Index, IndexMut};
 use core::marker::PhantomData;
+use memory::FrameAllocator;
 
 // Table levels for page tables. These allow us to customize the page tables
 // depending on their level.
@@ -79,8 +80,8 @@ impl<L> Table<L> where L: HierarchicalLevel {
     // Return the next table, if it exists, or create a new one
 
     pub fn next_table_create<A>(&mut self, index: usize, allocator: &mut A) -> &mut Table<L::NextLevel> 
-        where A: FrameAllocator {
-
+        where A: FrameAllocator 
+    {
         if self.next_table(index).is_none() {
             assert!(!self.entries[index].flags().contains(HUGE_PAGE),"mapping code does not support huge pages");
             let frame = allocator.allocate_frame().expect("no frames available");
