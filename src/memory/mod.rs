@@ -1,4 +1,5 @@
 pub use self::area_frame_allocator::AreaFrameAllocator;
+pub use self::paging::test_paging;
 
 mod area_frame_allocator;
 mod paging;
