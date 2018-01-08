@@ -4,7 +4,7 @@ pub struct Entry(u64);
 
 impl Entry {
     pub fn is_unused(&self) -> bool {
-        self.0 == 0;
+        self.0 == 0
     }
 
     // An unused untry is completey 0, which allows us to differentiate
