@@ -55,7 +55,8 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
                                                               multiboot_start, 
                                                               multiboot_end, 
                                                               memory_map_tag.memory_areas());
-    enable_nxe_bit();                                                              
+    enable_nxe_bit();   
+    enable_write_protect_bit();                                                           
     memory::remap_the_kernel(&mut frame_allocator, boot_info);
     frame_allocator.allocate_frame();
     println!("Boot complete");
@@ -80,4 +81,11 @@ fn enable_nxe_bit() {
         let efer = rdmsr(IA32_EFER);
         wrmsr(IA32_EFER, efer | nxe_bit);
     }
+}
+
+// Enable write protection bits so we can't write into .code and .rodata
+fn enable_write_protect_bit() {
+    use x86_64::registers::control_regs::{cr0, cr0_write, Cr0};
+
+    unsafe { cr0_write(cr0() | Cr0::WRITE_PROTECT) };
 }
