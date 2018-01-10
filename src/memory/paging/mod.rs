@@ -2,6 +2,7 @@ use memory::{PAGE_SIZE, Frame, FrameAllocator};
 use self::table::{Table, Level4};
 use core::ptr::Unique;
 pub use self::entry::*;
+use self::temporary_page::TemporaryPage;
 
 mod entry;
 mod table;
@@ -53,6 +54,25 @@ pub struct ActivePageTable {
 // ActivePageTable is unique -- there can only ever be one instance.
 
 impl ActivePageTable {
+
+    // temporarily changes the recursive mapping and executes a given closure 
+    // in the new context
+    pub fn with<F>(&mut self,
+                table: &mut InactivePageTable,
+                f: F)
+        where F: FnOnce(&mut ActivePageTable)
+    {
+        use x86_64::instructions::tlb;
+
+        // overwrite recursive mapping
+        self.p4_mut()[511].set(table.p4_frame.clone(), PRESENT | WRITABLE);
+        tlb::flush_all();
+
+        // execute f in the new context
+        f(self);
+
+        // TODO restore recursive mapping to original p4 table
+    }
 
     pub unsafe fn new() -> ActivePageTable {
         ActivePageTable {
@@ -211,8 +231,20 @@ pub struct InactivePageTable {
 }
 
 impl InactivePageTable {
-    pub fn new(frame: Frame) -> InactivePageTable {
-        // TODO zero and recursive map the frame
+    pub fn new(frame: Frame,
+               active_table: &mut ActivePageTable,
+               temporary_page: &mut TemporaryPage)
+               -> InactivePageTable {
+        {
+            let table = temporary_page.map_table_frame(frame.clone(),
+                active_table);
+            // now we are able to zero the table
+            table.zero();
+            // set up recursive mapping for the table
+            table[511].set(frame.clone(), PRESENT | WRITABLE);
+        }
+        temporary_page.unmap(active_table);
+
         InactivePageTable { p4_frame: frame }
     }
 }
