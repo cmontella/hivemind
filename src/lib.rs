@@ -4,6 +4,9 @@
 #![feature(unique)]
 #![feature(const_fn)]
 #![no_std]
+#![feature(alloc)]
+#![feature(global_allocator)]
+#![feature(allocator_api)]
 
 extern crate rlibc;
 extern crate volatile;
@@ -16,8 +19,11 @@ extern crate x86_64;
 #[macro_use]
 mod vga_buffer;
 mod memory;
+#[macro_use]
+extern crate alloc;
 
 use memory::FrameAllocator;
+use memory::BumpAllocator;
 
 #[no_mangle]
 pub extern fn hivemind_entry(multiboot_info_address: usize) {
@@ -59,6 +65,10 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
     enable_write_protect_bit();                                                           
     memory::remap_the_kernel(&mut frame_allocator, boot_info);
     frame_allocator.allocate_frame();
+
+    use alloc::boxed::Box;
+    let heap_test = Box::new(42);
+
     println!("Boot complete");
 
     loop{}
@@ -89,3 +99,10 @@ fn enable_write_protect_bit() {
 
     unsafe { cr0_write(cr0() | Cr0::WRITE_PROTECT) };
 }
+
+pub const HEAP_START: usize = 0o_000_001_000_000_0000;
+pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
+
+#[global_allocator]
+static HEAP_ALLOCATOR: BumpAllocator = BumpAllocator::new(HEAP_START,
+    HEAP_START + HEAP_SIZE);
