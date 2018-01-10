@@ -5,6 +5,7 @@ pub use self::entry::*;
 
 mod entry;
 mod table;
+mod temporary_page;
 
 const ENTRY_COUNT: usize = 512;  // With 512 entries at 8kb per entry, these 
                                  //total to a page size of 4096KB (4KiB).
@@ -14,6 +15,7 @@ pub type PhysicalAddress = usize;
 pub type VirtualAddress = usize;
 
 // A virtual page
+#[derive(Debug, Clone, Copy)]
 pub struct Page {
     number: usize,
 }
@@ -69,7 +71,8 @@ impl ActivePageTable {
         unsafe { self.p4.as_mut() }
     }
 
-    // Translate a virtual memory address to a physical memory address
+    // Translates a virtual to the corresponding physical address.
+    // Returns `None` if the address is not mapped.
 
     pub fn translate(&self, virtual_address: VirtualAddress) -> Option<PhysicalAddress> {
         let offset = virtual_address % PAGE_SIZE;
@@ -121,7 +124,9 @@ impl ActivePageTable {
         .or_else(huge_page)
     }
 
-    // Modifies page tables to map a page to a frame
+    // Maps the page to the frame with the provided flags.
+    // The `PRESENT` flag is added by default. Needs a
+    // `FrameAllocator` as it might need to create new page tables.// Modifies page tables to map a page to a frame
     pub fn map_to<A>(&mut self, page: Page, frame: Frame, flags: EntryFlags, allocator: &mut A) 
         where A: FrameAllocator 
     {
@@ -134,7 +139,8 @@ impl ActivePageTable {
         p1[page.p1_index()].set(frame, flags | PRESENT);
     }
 
-    // Pick a free frame
+    // Maps the page to some free frame with the provided flags.
+    // The free frame is allocated from the given `FrameAllocator`.
     pub fn map<A>(&mut self, page: Page, flags: EntryFlags, allocator: &mut A)
         where A: FrameAllocator
     {
@@ -142,13 +148,17 @@ impl ActivePageTable {
         self.map_to(page, frame, flags, allocator)
     }
 
+    // Identity map the the given frame with the provided flags.   
+    // The `FrameAllocator` is used to create new page tables if needed.
     pub fn identity_map<A>(&mut self, frame: Frame, flags: EntryFlags, allocator: &mut A)
         where A: FrameAllocator
     {
         let page = Page::containing_address(frame.start_address());
         self.map_to(page, frame, flags, allocator)
     }
-
+    
+    // Unmaps the given page and adds all freed frames to the given
+    // `FrameAllocator`.
     fn unmap<A>(&mut self, page: Page, allocator: &mut A)
         where A: FrameAllocator
     {
@@ -192,4 +202,17 @@ pub fn test_paging<A>(allocator: &mut A)
 
     page_table.unmap(Page::containing_address(addr), allocator);
     println!("None = {:?}", page_table.translate(addr));
+}
+
+// We need a way to work on Inactive Page Tables
+
+pub struct InactivePageTable {
+    p4_frame: Frame,
+}
+
+impl InactivePageTable {
+    pub fn new(frame: Frame) -> InactivePageTable {
+        // TODO zero and recursive map the frame
+        InactivePageTable { p4_frame: frame }
+    }
 }
