@@ -15,6 +15,11 @@ pub struct Frame {
 }
 
 impl Frame {
+
+    fn clone(&self) -> Frame {
+        Frame { number: self.number }
+    }
+
     fn containing_address(address: usize) -> Frame {
         Frame { number: address / PAGE_SIZE }
     }
