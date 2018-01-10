@@ -55,6 +55,7 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
                                                               multiboot_start, 
                                                               multiboot_end, 
                                                               memory_map_tag.memory_areas());
+    enable_nxe_bit();                                                              
     memory::remap_the_kernel(&mut frame_allocator, boot_info);
     frame_allocator.allocate_frame();
     println!("Boot complete");
@@ -69,4 +70,14 @@ pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32
     println!("\n\nPanic in {} at line {}:", file, line);
     println!("     {}", fmt);
     loop{}
+}
+
+fn enable_nxe_bit() {
+    use x86_64::registers::msr::{IA32_EFER, rdmsr, wrmsr};
+
+    let nxe_bit = 1 << 11;
+    unsafe {
+        let efer = rdmsr(IA32_EFER);
+        wrmsr(IA32_EFER, efer | nxe_bit);
+    }
 }
