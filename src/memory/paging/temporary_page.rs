@@ -48,8 +48,8 @@ impl TemporaryPage {
 
 struct TinyAllocator([Option<Frame>; 3]);
 
-impl FrameAllocator for TinyAllocator {
-    
+
+impl TinyAllocator {
     // fills a new tinyallocator from some other allocator:
     fn new<A>(allocator: &mut A) -> TinyAllocator
         where A: FrameAllocator
@@ -58,6 +58,9 @@ impl FrameAllocator for TinyAllocator {
         let frames = [f(), f(), f()];
         TinyAllocator(frames)
     }
+}
+
+impl FrameAllocator for TinyAllocator {
 
     fn allocate_frame(&mut self) -> Option<Frame> {
         for frame_option in &mut self.0 {
