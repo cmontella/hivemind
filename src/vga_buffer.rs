@@ -5,7 +5,7 @@ use spin::Mutex;
 
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
-const VGA_ADDRESS: usize = 0xb8000;
+pub const VGA_ADDRESS: usize = 0xb8000;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
