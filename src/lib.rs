@@ -56,7 +56,7 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
                                                               multiboot_end, 
                                                               memory_map_tag.memory_areas());
     memory::remap_the_kernel(&mut frame_allocator, boot_info);
-
+    frame_allocator.allocate_frame();
     println!("Boot complete");
 
     loop{}
