@@ -21,6 +21,8 @@ mod vga_buffer;
 mod memory;
 #[macro_use]
 extern crate alloc;
+#[macro_use]
+extern crate once;
 
 use memory::FrameAllocator;
 use memory::BumpAllocator;
@@ -33,10 +35,11 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
     // Get info passed from multiboot
     let boot_info = unsafe { multiboot2::load(multiboot_info_address)};
     memory::init(boot_info);
-    enable_nxe_bit();   
-    enable_write_protect_bit();  
-    use alloc::boxed::Box;
-    let heap_test = Box::new(42);
+    //enable_nxe_bit();   
+    //enable_write_protect_bit();  
+    
+    //use alloc::boxed::Box;
+    //let heap_test = Box::new(42);
 
     println!("Boot complete");
 
