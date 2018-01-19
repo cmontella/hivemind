@@ -32,6 +32,8 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
     // Start by clearing the screen
     vga_buffer::clear_screen();
 
+    println!("Loading Hivemind v0.1.0 ...");
+
     // Get info passed from multiboot
     let boot_info = unsafe { multiboot2::load(multiboot_info_address)};
     memory::init(boot_info);
@@ -41,7 +43,7 @@ pub extern fn hivemind_entry(multiboot_info_address: usize) {
     //use alloc::boxed::Box;
     //let heap_test = Box::new(42);
 
-    println!("Boot complete");
+    println!("Boot complete.");
 
     loop{}
 }
