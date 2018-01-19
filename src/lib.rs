@@ -26,6 +26,7 @@ extern crate once;
 
 use memory::FrameAllocator;
 use memory::BumpAllocator;
+use linked_list_allocator::LockedHeap;
 
 #[no_mangle]
 pub extern fn hivemind_entry(multiboot_info_address: usize) {
@@ -78,5 +79,4 @@ pub const HEAP_START: usize = 0o_000_001_000_000_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
 
 #[global_allocator]
-static HEAP_ALLOCATOR: BumpAllocator = BumpAllocator::new(HEAP_START,
-    HEAP_START + HEAP_SIZE);
+static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
