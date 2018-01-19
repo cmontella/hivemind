@@ -1,4 +1,4 @@
-//HiveMind
+// HiveMind
 
 #![feature(lang_items)]
 #![feature(unique)]
@@ -15,34 +15,48 @@ extern crate multiboot2;
 #[macro_use]
 extern crate bitflags;
 extern crate x86_64;
-
-#[macro_use]
-mod vga_buffer;
-mod memory;
+extern crate linked_list_allocator;
 #[macro_use]
 extern crate alloc;
 #[macro_use]
 extern crate once;
+
+#[macro_use]
+mod vga_buffer;
+mod memory;
 
 use memory::FrameAllocator;
 use memory::BumpAllocator;
 use linked_list_allocator::LockedHeap;
 
 #[no_mangle]
-pub extern fn hivemind_entry(multiboot_info_address: usize) {
+pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     // Start by clearing the screen
     vga_buffer::clear_screen();
 
-    println!("Loading Hivemind v0.1.0 ...");
+    println!("Booting Hivemind v0.1.0 ...");
 
     // Get info passed from multiboot
-    let boot_info = unsafe { multiboot2::load(multiboot_info_address)};
+    let boot_info = unsafe { 
+        multiboot2::load(multiboot_info_address)
+    };
+    enable_nxe_bit();   
+    enable_write_protect_bit();  
+
+    // Set up a guard page and map the heap pages
     memory::init(boot_info);
-    //enable_nxe_bit();   
-    //enable_write_protect_bit();  
+
+    // Initialize the heap allocator
+    unsafe {
+        HEAP_ALLOCATOR.lock().init(HEAP_START, HEAP_START + HEAP_SIZE);
+    }
     
-    //use alloc::boxed::Box;
-    //let heap_test = Box::new(42);
+    use alloc::boxed::Box;
+    let heap_test = Box::new(42);
+
+    for i in 0..10000 {
+        format!("Some String");
+    }
 
     println!("Boot complete.");
 
