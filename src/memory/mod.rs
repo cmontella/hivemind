@@ -1,12 +1,9 @@
 pub use self::area_frame_allocator::AreaFrameAllocator;
-pub use self::paging::test_paging;
 pub use self::paging::remap_the_kernel;
-pub use self::heap_allocator::BumpAllocator;
 use multiboot2::BootInformation;
 
 mod area_frame_allocator;
 mod paging;
-mod heap_allocator;
 
 pub const PAGE_SIZE: usize = 4096;
 

@@ -7,6 +7,9 @@
 #![feature(alloc)]
 #![feature(global_allocator)]
 #![feature(allocator_api)]
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
 
 extern crate rlibc;
 extern crate volatile;
@@ -26,7 +29,6 @@ mod vga_buffer;
 mod memory;
 
 use memory::FrameAllocator;
-use memory::BumpAllocator;
 use linked_list_allocator::LockedHeap;
 
 #[no_mangle]
@@ -34,7 +36,8 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     // Start by clearing the screen
     vga_buffer::clear_screen();
 
-    println!("Booting Hivemind v0.1.0 ...");
+    println!("Booting HiveMind...");
+    println!("v0.1.0 alpha");
 
     // Get info passed from multiboot
     let boot_info = unsafe { 
@@ -49,13 +52,6 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     // Initialize the heap allocator
     unsafe {
         HEAP_ALLOCATOR.lock().init(HEAP_START, HEAP_START + HEAP_SIZE);
-    }
-    
-    use alloc::boxed::Box;
-    let heap_test = Box::new(42);
-
-    for i in 0..10000 {
-        format!("Some String");
     }
 
     println!("Boot complete.");
