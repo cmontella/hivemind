@@ -198,11 +198,9 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> Ac
                 // section is not loaded to memory
                 continue;
             }
-            assert!(section.start_address() % PAGE_SIZE == 0,
-                    "sections need to be page aligned");
+            assert!(section.start_address() % PAGE_SIZE == 0, "sections need to be page aligned");
 
-            println!("mapping section at addr: {:#x}, size: {:#x}",
-                section.addr, section.size);
+            println!("mapping section at addr: {:#x}, size: {:#x}", section.addr, section.size);
 
             let flags = EntryFlags::from_elf_section_flags(section);
 
@@ -225,7 +223,7 @@ pub fn remap_the_kernel<A>(allocator: &mut A, boot_info: &BootInformation) -> Ac
     });
 
     let old_table = active_table.switch(new_table);
-    println!("NEW TABLE!!!");
+    println!("new table.");
 
     // turn the old p4 page into a guard page
     let old_p4_page = Page::containing_address(

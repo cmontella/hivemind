@@ -16,4 +16,5 @@ long_mode_start:
     extern hivemind_entry
     call hivemind_entry
 
+    ; we should never get here
     hlt
