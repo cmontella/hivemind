@@ -13,3 +13,4 @@ Cargo.lock
 
 # Build directory
 /build/
+.vscode/settings.json
