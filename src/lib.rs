@@ -27,6 +27,7 @@ extern crate once;
 #[macro_use]
 mod vga_buffer;
 mod memory;
+mod interrupts;
 
 use memory::FrameAllocator;
 use linked_list_allocator::LockedHeap;
