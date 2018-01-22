@@ -10,6 +10,7 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 #![allow(unused_variables)]
+#![feature(abi_x86_interrupt)]
 
 extern crate rlibc;
 extern crate volatile;
