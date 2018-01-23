@@ -65,6 +65,17 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     // invoke a breakpoint exception
     x86_64::instructions::interrupts::int3();
 
+    // invoke a page fault    
+    /*unsafe {
+        *(0xdeadbeaf as *mut u64) = 42;
+    };*/
+
+    // Invoke a stack overflow
+    fn stack_overflow() {
+        stack_overflow();
+    }
+    stack_overflow();
+
     println!("Boot complete.");
 
     loop{}
