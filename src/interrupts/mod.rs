@@ -3,6 +3,8 @@ use memory::MemoryController;
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
 
+mod gdt;
+
 // The zeroth IST entry is the double fault stack. Any other one would work,
 // but this is fine.
 const DOUBLE_FAULT_IST_INDEX: usize = 0;
