@@ -51,10 +51,10 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     enable_write_protect_bit();  
 
     // Set up a guard page and map the heap pages
-    memory::init(boot_info);
+    let mut memory_controller = memory::init(boot_info);
 
     // initialize our IDT
-    interrupts::init();
+    interrupts::init(&mut memory_controller);
 
     // Initialize the heap allocator
     unsafe {
@@ -63,7 +63,7 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
 
     // invoke a breakpoint exception
     x86_64::instructions::interrupts::int3();
-    
+
     println!("Boot complete.");
 
     loop{}

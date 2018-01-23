@@ -1,4 +1,5 @@
 use x86_64::structures::idt::{Idt, ExceptionStackFrame};
+use memory::MemoryController;
 
 // Interrupt Descriptor Table (IDT)
 // The IDT hold pointers to handler functions for various exceptions and interrupts.
@@ -14,7 +15,12 @@ lazy_static! {
 
 // Initialize the IDT
 
-pub fn init() {
+pub fn init(memory_controller: &mut MemoryController) {
+    // We allocate one page (4096 bytes) for our double fault handler.
+    let handler_pages = 1; 
+    let double_fault_stack = memory_controller.alloc_stack(handler_pages)
+        .expect("Could not allocate double fault stack");
+
     IDT.load();
 }
 

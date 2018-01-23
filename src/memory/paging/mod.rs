@@ -7,6 +7,7 @@ pub use self::mapper::Mapper;
 use core::ops::{Deref, DerefMut};
 use multiboot2::BootInformation;
 use vga_buffer::VGA_ADDRESS;
+use core::ops::Add;
 
 mod entry;
 mod table;
@@ -54,6 +55,17 @@ impl Page {
             start: start,
             end: end,
         }
+    }
+}
+
+// In order to do arithmetic on pages (e.g. calculate the hundredth page after 
+// stack_alloc_start)
+
+impl Add<usize> for Page {
+    type Output = Page;
+
+    fn add(self, rhs: usize) -> Page {
+        Page { number: self.number + rhs }
     }
 }
 
