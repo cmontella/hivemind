@@ -1,5 +1,11 @@
 use x86_64::structures::idt::{Idt, ExceptionStackFrame};
 use memory::MemoryController;
+use x86_64::structures::tss::TaskStateSegment;
+use x86_64::VirtualAddress;
+
+// The zeroth IST entry is the double fault stack. Any other one would work,
+// but this is fine.
+const DOUBLE_FAULT_IST_INDEX: usize = 0;
 
 // Interrupt Descriptor Table (IDT)
 // The IDT hold pointers to handler functions for various exceptions and interrupts.
@@ -20,6 +26,13 @@ pub fn init(memory_controller: &mut MemoryController) {
     let handler_pages = 1; 
     let double_fault_stack = memory_controller.alloc_stack(handler_pages)
         .expect("Could not allocate double fault stack");
+
+    // Create a Task State Segment (TSS) that contains our double fault stack
+    // in its interrupt stack table.
+
+    let mut tss = TaskStateSegment::new();
+    tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX] = VirtualAddress(
+        double_fault_stack.top()); // Load to top and it grows down.
 
     IDT.load();
 }
