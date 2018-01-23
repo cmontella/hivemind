@@ -7,7 +7,7 @@ pub struct StackAllocator {
 
 impl StackAllocator {
   pub fn new(page_range: PageIter) -> StackAllocator {
-    StackAllocator { rage: page_rage }
+    StackAllocator { range: page_range }
   }
 
   // Allocate a new stack
