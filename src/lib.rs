@@ -26,6 +26,7 @@ extern crate alloc;
 extern crate once;
 #[macro_use]
 extern crate lazy_static;
+extern crate bit_field;
 
 #[macro_use]
 mod vga_buffer;
