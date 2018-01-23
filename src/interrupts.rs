@@ -1,5 +1,8 @@
 use x86_64::structures::idt::{Idt, ExceptionStackFrame};
 
+// Interrupt Descriptor Table (IDT)
+// The IDT hold pointers to handler functions for various exceptions and interrupts.
+
 lazy_static! {
     static ref IDT: Idt = {
         let mut idt = Idt::new();
@@ -9,44 +12,50 @@ lazy_static! {
     };
 }
 
+// Initialize the IDT
+
 pub fn init() {
     IDT.load();
 }
 
-// Handle breakpoints
+// ## Exception Handlers
+
+// Breakpoints
+// Breakpoints are set by the user to aid in debugging. 
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFrame) {
-  println!("A breakpoint exception occurred\n{:#?}", stack_frame);
+  println!("Breakpoint:\n{:#?}", stack_frame);
 }
 
-// Handle double faults. Double faults can only occur in specific combinations of exceptions
+// Double faults
+// Double faults can only occur in specific combinations of exceptions:
 
-/*
-In the case of:
+/*-----------------------------------------------------------------------------
+-- In the case of: --
 Divide-by-zero,
 Invalid TSS,
 Segment Not Present,
 Stack-Segment Fault,
 General Protection Fault	
 
-A Double double fault occurs if:
+-- A Double double fault occurs if: --
 Invalid TSS,
 Segment Not Present,
 Stack-Segment Fault,
 General Protection Fault
-
-In the case of:
+------------------------------------------------------------------------------|
+-- In the case of: --
 Page Fault	
 
-A Double double fault occurs if:
+-- A Double double fault occurs if: --
 Page Fault,
 Invalid TSS,
 Segment Not Present,
 Stack-Segment Fault,
 General Protection Fault
-*/
+-----------------------------------------------------------------------------*/
 
 extern "x86-interrupt" fn double_fault_handler(stack_frame: &mut ExceptionStackFrame, _error_code: u64) {
-    println!("\nEXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
+    println!("Double Fault:\n{:#?}", stack_frame);
     loop {}
 }
