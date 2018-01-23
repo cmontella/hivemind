@@ -32,7 +32,7 @@ impl Page {
         Page { number: address / PAGE_SIZE }
     }
 
-    fn start_address(&self) -> usize {
+    pub fn start_address(&self) -> usize {
         self.number * PAGE_SIZE
     }
 
@@ -57,6 +57,7 @@ impl Page {
     }
 }
 
+#[derive(Clone)]
 pub struct PageIter {
     start: Page,
     end: Page,
