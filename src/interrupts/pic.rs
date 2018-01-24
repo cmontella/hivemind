@@ -2,15 +2,17 @@ use x86_64::instructions::port::{inb, outb};
 
 // # Program Interrupt Chip (PIC)
 
-// The PIC is a chip on the motherboard to which all interrupts are sent.
-// External devices send IRQs to the PIC, which talks to the CPU, which talks
-// to the OS. The OS handles the IRQ, and then send a signal back to the PIC.
+/*
+The PIC is a chip on the motherboard to which all interrupts are sent.
+External devices send IRQs to the PIC, which talks to the CPU, which talks
+to the OS. The OS handles the IRQ, and then send a signal back to the PIC.
 
-// We need to enable interrupts, and then handle reading and writing data from 
-// the PIC. We also need to represent the PIC, which is actually a chain of two
-// PICs connected serially.
+We need to enable interrupts, and then handle reading and writing data from 
+the PIC. We also need to represent the PIC, which is actually a chain of two
+PICs connected serially.
 
-// Code is adapted from here: https://wiki.osdev.org/8259_PIC
+Code is adapted from here: https://wiki.osdev.org/8259_PIC
+*/
 
 // ## Standard ISA IRQs for an IBM-PC Compatible PIC
 
@@ -51,11 +53,11 @@ const ICW1_INTERVAL4: u8 = 0x04;		// Call address interval 4 (8)
 const ICW1_LEVEL:     u8 = 0x08;		// Level triggered (edge) mode 
 const ICW1_INIT:      u8 = 0x10;		// Initialization - required! 
  
-const ICW4_8086:       u8 = 0x01;		// 8086/88 (MCS-80/85) mode 
-const ICW4_AUTO:       u8 = 0x02;		// Auto (normal) EOI 
-const ICW4_BUF_SEC:    u8 = 0x08;		// Buffered mode/secondary 
-const ICW4_BUF_PRIM:   u8 = 0x0C;		// Buffered mode/primary 
-const ICW4_SFNM:       u8 = 0x10;		// Special fully nested (not) 
+const ICW4_8086:      u8 = 0x01;		// 8086/88 (MCS-80/85) mode 
+const ICW4_AUTO:      u8 = 0x02;		// Auto (normal) EOI 
+const ICW4_BUF_SEC:   u8 = 0x08;		// Buffered mode/secondary 
+const ICW4_BUF_PRIM:  u8 = 0x0C;		// Buffered mode/primary 
+const ICW4_SFNM:      u8 = 0x10;		// Special fully nested (not) 
 
 struct PIC {
 
@@ -63,26 +65,35 @@ struct PIC {
 
 impl PIC {
 
-  // Tell the PIC that the interrupt is over with the End of Interrupt (EOI)
-  // If the IRQ came from the Primary PIC, it is sufficient to issue the 
-  // EOI only to the Primary PIC; however if the IRQ came from the secondary
-  //  PIC, it is necessary to issue the command to both PIC chips.
+  // Create a new PIC
+  pub fn new() -> PIC {
+    PIC{}
+  }
+
+  /*
+  Tell the PIC that the interrupt is over with the End of Interrupt (EOI)
+  If the IRQ came from the Primary PIC, it is sufficient to issue the 
+  EOI only to the Primary PIC; however if the IRQ came from the secondary
+  PIC, it is necessary to issue the command to both PIC chips.
+  */
   pub fn send_end_of_interrupt(irq: u8) {
     unsafe { 
       // IRQs greater than 8 came from the secondary PIC
       if irq >= 8 {
-        outb(PIC2_COMMAND, PIC_EOI); };
+        outb(PIC2_COMMAND, PIC_EOI);
       }
       outb(PIC1_COMMAND, PIC_EOI); 
     };
   }
 
-  // The first command we will need to give the two PICs is the initialize 
-  // command (0x11), which makes the PIC wait for 3 extra "initialization 
-  // words" on the data port. These bytes give the PIC:
-  // - Its vector offset. (ICW2)
-  // - How it is wired to primary/secondary. (ICW3)
-  // - Gives additional information about the environment. (ICW4)
+  /*
+  The first command we will need to give the two PICs is the initialize 
+  command (0x11), which makes the PIC wait for 3 extra "initialization 
+  words" on the data port. These bytes give the PIC:
+  - Its vector offset. (ICW2)
+  - How it is wired to primary/secondary. (ICW3)
+  - Gives additional information about the environment. (ICW4)
+  */
   pub fn init(offset1: u8, offset2: u8) {
     unsafe {
       // Save masks
@@ -123,10 +134,12 @@ impl PIC {
 
 }
 
-// We need a wait function to allow time for the PIC to execute the commands we
-// send to it. Normally we would use a timer to do this, but we need the PIC to
-// make one. Instead, we write some data to a safe port 0x80 and that should be 
-// enough time.
+/*
+We need a wait function to allow time for the PIC to execute the commands we
+send to it. Normally we would use a timer to do this, but we need the PIC to
+make one. Instead, we write some data to a safe port 0x80 and that should be 
+enough time.
+*/
 fn io_wait() {
   unsafe {
     outb(0x80,0);
