@@ -2,7 +2,7 @@ use x86_64::structures::tss::TaskStateSegment;
 use x86_64::structures::gdt::SegmentSelector;
 use x86_64::PrivilegeLevel;
 
-// A Global Descriptor Table (GDT)
+// # A Global Descriptor Table (GDT)
 
 pub struct Gdt {
     table: [u64; 8],
@@ -64,6 +64,8 @@ impl Gdt {
   }
 
 }
+
+// ## Descriptors
 
 /*
 There are two types of GDT entries in long mode: user and system segment 

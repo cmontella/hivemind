@@ -5,15 +5,20 @@ use x86_64::VirtualAddress;
 use spin::Once;
 
 mod gdt;
+mod pic;
+
+// # Interrupt Descriptor Table (IDT)
 
 // The zeroth IST entry is the double fault stack. Any other one would work,
 // but this is fine.
+
 const DOUBLE_FAULT_IST_INDEX: usize = 0;
 
 static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<gdt::Gdt> = Once::new();
 
-// Interrupt Descriptor Table (IDT)
+// ## Creating and Initializing the IDT
+
 // The IDT hold pointers to handler functions for various exceptions and interrupts.
 
 lazy_static! {
@@ -29,12 +34,15 @@ lazy_static! {
     };
 }
 
-// Initialize the IDT
+// Initialize the Interrupt Descriptor Table (IDT)
 
 pub fn init(memory_controller: &mut MemoryController) {
     use x86_64::structures::gdt::SegmentSelector;
     use x86_64::instructions::segmentation::set_cs;
     use x86_64::instructions::tables::load_tss;
+
+    // We need to create a clean stack for the CPU to switch to in the
+    // event of a double fault. Here we go...
 
     // We allocate one page (4096 bytes) for our double fault handler.
     let handler_pages = 1; 
@@ -61,7 +69,6 @@ pub fn init(memory_controller: &mut MemoryController) {
     });
     gdt.load();
 
-
     unsafe {
         // Reload code segment register
         set_cs(code_selector);
@@ -69,12 +76,14 @@ pub fn init(memory_controller: &mut MemoryController) {
         load_tss(tss_selector);
     }
 
+    // Load the IDT into the CPU
     IDT.load();
 }
 
 // ## Exception Handlers
 
 // ### Breakpoints
+
 // Breakpoints are set by the user to aid in debugging. 
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFrame) {
@@ -99,6 +108,7 @@ extern "x86-interrupt" fn page_fault_handler(stack_frame: &mut ExceptionStackFra
 }
 
 // ### Double faults
+
 // Double faults can only occur in specific combinations of exceptions:
 
 /*-----------------------------------------------------------------------------
@@ -130,3 +140,9 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: &mut ExceptionStackF
     println!("Double Fault:\n{:#?}", stack_frame);
     loop {}
 }
+
+// ## Interrupts
+
+// Interrupts occur when an external device wants to gain execution time. It
+// will send an Interrupt Request (IRQ) which will be handled by the IDT in a
+// similar fashion to handling exceptions.
