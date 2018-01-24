@@ -1,4 +1,4 @@
-use x86_64::structures::idt::{Idt, ExceptionStackFrame};
+use x86_64::structures::idt::{Idt, ExceptionStackFrame, PageFaultErrorCode};
 use memory::MemoryController;
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
@@ -20,6 +20,7 @@ lazy_static! {
     static ref IDT: Idt = {
         let mut idt = Idt::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
+        idt.page_fault.set_handler_fn(page_fault_handler);
         unsafe {
             idt.double_fault.set_handler_fn(double_fault_handler)
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX as u16);
@@ -73,14 +74,31 @@ pub fn init(memory_controller: &mut MemoryController) {
 
 // ## Exception Handlers
 
-// Breakpoints
+// ### Breakpoints
 // Breakpoints are set by the user to aid in debugging. 
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut ExceptionStackFrame) {
   println!("Breakpoint:\n{:#?}", stack_frame);
 }
 
-// Double faults
+// ### Page Faults
+/*
+Page faults occur when memory is accessed in an inappropriate way. An error 
+code is returned with various flags that can be set:
+
+- PROTECTION_VIOLATION - the page fault was caused by a page-protection violation, else the page fault was caused by a not-present page.
+- CAUSED_BY_WRITE - If this flag is set, the memory access that caused the page fault was a write.
+- USER_MODE - If this flag is set, an access in user mode (CPL=3) caused the page fault.
+- MALFORMED_TABLE - If this flag is set, the page fault is a result of the processor reading a 1 from a reserved field within a page-translation-table entry.
+- INSTRUCTION_FETCH - If this flag is set, it indicates that the access that caused the page fault was an instruction fetch.
+*/
+
+extern "x86-interrupt" fn page_fault_handler(stack_frame: &mut ExceptionStackFrame, error_code: PageFaultErrorCode) {
+  println!("Page Fault: {:?}\n{:#?}", error_code, stack_frame);
+  loop{};
+}
+
+// ### Double faults
 // Double faults can only occur in specific combinations of exceptions:
 
 /*-----------------------------------------------------------------------------
