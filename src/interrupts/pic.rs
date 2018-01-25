@@ -1,6 +1,4 @@
-use x86_64::instructions::port::{inb, outb};
-
-// # Program Interrupt Chip (PIC)
+// # Program Interrupt Controller (PIC)
 
 /*
 The PIC is a chip on the motherboard to which all interrupts are sent.
@@ -37,6 +35,10 @@ IRQ	   Description
 15	   Secondary ATA Hard Disk
 */
 
+// ## Prelude
+
+use x86_64::instructions::port::{inb, outb};
+
 // ## Some Constants
 
 const PIC1:           u8  = 0x20;		// IO base address for primary PIC 
@@ -59,7 +61,17 @@ const ICW4_BUF_SEC:   u8 = 0x08;		// Buffered mode/secondary
 const ICW4_BUF_PRIM:  u8 = 0x0C;		// Buffered mode/primary 
 const ICW4_SFNM:      u8 = 0x10;		// Special fully nested (not) 
 
-struct PIC {
+const PIC1_CMD2: u16 =                    0x20;
+const PIC1_DATA2: u8 =                   0x21;
+const PIC2_CMD2: u16 =                    0xA0;
+const PIC2_DATA2: u8 =                   0xA1;
+const PIC_READ_IRR: u8 =                0x0a;    /* OCW3 irq ready next CMD read */
+const PIC_READ_ISR: u8 =                0x0b;   /* OCW3 irq service next CMD read */
+
+
+// ## Modeling the PIC
+
+pub struct PIC {
 
 }
 
@@ -76,7 +88,7 @@ impl PIC {
   EOI only to the Primary PIC; however if the IRQ came from the secondary
   PIC, it is necessary to issue the command to both PIC chips.
   */
-  pub fn send_end_of_interrupt(irq: u8) {
+  pub fn send_end_of_interrupt(&self, irq: u8) {
     unsafe { 
       // IRQs greater than 8 came from the secondary PIC
       if irq >= 8 {
@@ -94,7 +106,7 @@ impl PIC {
   - How it is wired to primary/secondary. (ICW3)
   - Gives additional information about the environment. (ICW4)
   */
-  pub fn init(offset1: u8, offset2: u8) {
+  pub fn init(&self) {
     unsafe {
       // Save masks
       let pic1_mask: u8 = inb(PIC1_DATA);
@@ -107,11 +119,11 @@ impl PIC {
       io_wait();
 
       // ICW2: Primary PIC vector offset
-      outb(PIC1_DATA, offset1);                 
+      outb(PIC1_DATA, 0x20);
       io_wait();
       
       // ICW2: Secondary PIC vector offset
-      outb(PIC2_DATA, offset2);                 
+      outb(PIC2_DATA, 0x28);                 
       io_wait();
       
       // ICW3: tell Primary PIC that there is a Secondary PIC at IRQ2 (0000 0100)
@@ -130,6 +142,20 @@ impl PIC {
       outb(PIC1_DATA, pic1_mask);   
       outb(PIC2_DATA, pic2_mask);
     };
+  }
+
+  pub fn get_irq_register(&self, ocw3: u8) -> u16 {
+    unsafe{
+      outb(PIC1_CMD2, ocw3);
+      outb(PIC2_CMD2, ocw3);
+      let a = inb(PIC2_CMD2) << 7;
+      let b = inb(PIC1_CMD2);
+      println!("{:#b}",a);
+      println!("{:#b}",b);
+      
+      //(inb(PIC2_CMD2) << 8) | inb(PIC1_CMD2)
+      0
+    }
   }
 
 }

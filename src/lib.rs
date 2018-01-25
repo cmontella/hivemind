@@ -12,6 +12,7 @@
 #![allow(unused_variables)]
 #![feature(abi_x86_interrupt)]
 #![feature(ptr_internals)]
+#![feature(asm)]
 
 extern crate rlibc;
 extern crate volatile;
@@ -38,6 +39,7 @@ mod interrupts;
 use memory::FrameAllocator;
 use linked_list_allocator::LockedHeap;
 use raw_cpuid::CpuId;
+use x86_64::instructions;
 
 #[no_mangle]
 pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
@@ -57,7 +59,7 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     };
     enable_nxe_bit();   
     enable_write_protect_bit();  
-
+  
     print_header("Initializing Memory");
     // Set up a guard page and map the heap pages
     let mut memory_controller = memory::init(boot_info);
@@ -69,9 +71,9 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     unsafe {
         HEAP_ALLOCATOR.lock().init(HEAP_START, HEAP_START + HEAP_SIZE);
     }
-    
+
     // invoke a breakpoint exception
-    //x86_64::instructions::interrupts::int3();
+    x86_64::instructions::interrupts::int3();
 
     // invoke a page fault    
     /*unsafe {
@@ -87,13 +89,16 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
 
     print_header("Boot complete");
 
-    //let mut old_time = x86_64::instructions::rdtsc();
-    /*loop{
-        let new_time = x86_64::instructions::rdtsc();
-        let dt = new_time - old_time;
-        println!("Loop Time: {}", dt);
-        old_time = new_time;
-    }*/
+    unsafe {
+        // Keyboard interrupts only
+        instructions::port::outb(0x21,0xfd); 
+        instructions::port::outb(0xa1,0xff);
+        // Enable interrupts
+        instructions::interrupts::enable();
+    }
+    
+
+    loop {}
 }
 
 #[lang = "eh_personality"] extern fn eh_personality() {}

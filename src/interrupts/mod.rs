@@ -1,13 +1,14 @@
+// # Interrupts
+
 use x86_64::structures::idt::{Idt, ExceptionStackFrame, PageFaultErrorCode};
 use memory::MemoryController;
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
 use spin::Once;
+use x86_64::instructions::port::{inb, outb};
 
 mod gdt;
 mod pic;
-
-// # Interrupt Descriptor Table (IDT)
 
 // The zeroth IST entry is the double fault stack. Any other one would work,
 // but this is fine.
@@ -15,9 +16,10 @@ mod pic;
 const DOUBLE_FAULT_IST_INDEX: usize = 0;
 
 static TSS: Once<TaskStateSegment> = Once::new();
-static GDT: Once<gdt::Gdt> = Once::new();
+static GDT: Once<gdt::GDT> = Once::new();
+static PIC: Once<pic::PIC> = Once::new();
 
-// ## Creating and Initializing the IDT
+// ## Create and Initialize the Interrupt Descriptor Table (IDT)
 
 // The IDT hold pointers to handler functions for various exceptions and interrupts.
 
@@ -26,6 +28,8 @@ lazy_static! {
         let mut idt = Idt::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         idt.page_fault.set_handler_fn(page_fault_handler);
+        idt.interrupts[1].set_handler_fn(keyboard_interrupt_handler);
+        //println!("Set interrupt handlers");
         unsafe {
             idt.double_fault.set_handler_fn(double_fault_handler)
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX as u16);
@@ -62,7 +66,7 @@ pub fn init(memory_controller: &mut MemoryController) {
     let mut code_selector = SegmentSelector(0);
     let mut tss_selector = SegmentSelector(0);
     let gdt = GDT.call_once(|| {
-        let mut gdt = gdt::Gdt::new();
+        let mut gdt = gdt::GDT::new();
         code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
         tss_selector = gdt.add_entry(gdt::Descriptor::tss_segment(&tss));
         gdt
@@ -78,6 +82,15 @@ pub fn init(memory_controller: &mut MemoryController) {
 
     // Load the IDT into the CPU
     IDT.load();
+
+    // Initialize PIC
+    let pic = PIC.call_once(||{
+        let mut pic = pic::PIC::new();
+        pic.init();
+        pic.get_irq_register(0x0a);
+        pic
+    });
+
 }
 
 // ## Exception Handlers
@@ -146,3 +159,13 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: &mut ExceptionStackF
 // Interrupts occur when an external device wants to gain execution time. It
 // will send an Interrupt Request (IRQ) which will be handled by the IDT in a
 // similar fashion to handling exceptions.
+
+extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut ExceptionStackFrame) {
+    //println!("The Keyboard Was Pressed:\n{:#?}", stack_frame);
+    let scan_code;
+    unsafe {
+        scan_code = inb(0x60);
+        outb(0x20,0x20);
+    }
+    println!("{}",scan_code);
+}
