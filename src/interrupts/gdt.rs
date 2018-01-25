@@ -4,18 +4,18 @@ use x86_64::PrivilegeLevel;
 
 // # A Global Descriptor Table (GDT)
 
-pub struct Gdt {
+pub struct GDT {
     table: [u64; 8],
     next_free: usize,
 }
 
-impl Gdt {
-  pub fn new() -> Gdt {
-      Gdt {
+impl GDT {
+  pub fn new() -> GDT {
+      GDT {
           table: [0; 8], // 8 entries. Theoretical max is 8192.
           next_free: 1,  // Stores the index of the next free entry. We init
-                          // to 1 since the 0th entry needs to be 0 in a 
-                          // valid GDT.
+                         // to 1 since the 0th entry needs to be 0 in a 
+                         // valid GDT.
       }
   }
 
