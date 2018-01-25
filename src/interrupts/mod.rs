@@ -167,5 +167,65 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut Exception
         scan_code = inb(0x60);
         outb(0x20,0x20);
     }
-    println!("{}",scan_code);
+    match scan_code {
+        1  => (), // escape
+        28 => println!(""), // enter
+        57 => print!(" "),  // space
+        59..68 => (), // f1 - f10
+        87..88 => (), // f11 - f12
+        2 | 79 => print!("1"),
+        3 | 80 => print!("2"),
+        4 | 81 => print!("3"),
+        5 | 75 => print!("4"),
+        6 | 76 => print!("5"),
+        7 | 77 => print!("6"),
+        8 | 71 => print!("7"),
+        9 | 72 => print!("8"),
+        10 | 73 => print!("9"),
+        11 | 82 => print!("0"),
+        12 | 74 => print!("-"),
+        13 => print!("="),
+        14 => (), // backspace
+        15 => print!("    "), // tab
+        16 => print!("q"),
+        17 => print!("w"),
+        18 => print!("e"),
+        19 => print!("r"),
+        20 => print!("t"),
+        21 => print!("y"),
+        22 => print!("u"),
+        23 => print!("i"),
+        24 => print!("o"),
+        25 => print!("p"),
+        26 => print!("["),
+        27 => print!("]"),
+        30 => print!("a"),
+        31 => print!("s"),
+        32 => print!("d"),
+        33 => print!("f"),
+        34 => print!("g"),
+        35 => print!("h"),
+        36 => print!("j"),
+        37 => print!("k"),
+        38 => print!("l"),
+        39 => print!(";"),
+        40 => print!("'"),
+        41 => print!("`"),
+        43 => print!("\\"),
+        44 => print!("z"),
+        45 => print!("x"),
+        46 => print!("c"),
+        47 => print!("v"),
+        48 => print!("b"),
+        49 => print!("n"),
+        50 => print!("m"),
+        51 => print!(","),
+        52 => print!("."),
+        53 => print!("/"),
+        55 => print!("*"),
+        78 => print!("+"),
+        _ => (),
+    };
+
+    
 }

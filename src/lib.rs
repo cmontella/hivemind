@@ -13,6 +13,7 @@
 #![feature(abi_x86_interrupt)]
 #![feature(ptr_internals)]
 #![feature(asm)]
+#![feature(exclusive_range_pattern)]
 
 extern crate rlibc;
 extern crate volatile;
