@@ -3,8 +3,8 @@ use volatile::Volatile;
 use core::ptr::Unique;
 use spin::Mutex;
 
-const BUFFER_HEIGHT: usize = 25;
-const BUFFER_WIDTH: usize = 80;
+const VGA_HEIGHT: usize = 25;
+const VGA_WIDTH: usize = 80;
 pub const VGA_ADDRESS: usize = 0xb8000;
 
 #[allow(dead_code)]
@@ -52,13 +52,14 @@ struct ScreenChar {
 // effect.
 
 struct Buffer {
-    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
+    chars: [[Volatile<ScreenChar>; VGA_WIDTH]; VGA_HEIGHT],
 }
 
 // Create a screen writer type that writes character bytes to a buffer.
 
 pub struct ScreenWriter {
-    column_position: usize,
+    x: usize, 
+    y: usize,
     color_code: ColorCode,
     buffer: Unique<Buffer>,
 }
@@ -71,11 +72,11 @@ impl ScreenWriter {
             // Place a char in the screen buffer for any other byte
             byte => {
                 // Insert a new line if we've reached the end of the screen
-                if self.column_position >= BUFFER_WIDTH {
+                if self.x >= VGA_WIDTH {
                     self.new_line();
                 }
-                let row = BUFFER_HEIGHT - 1;
-                let col = self.column_position;
+                let row = self.y;
+                let col = self.x;
                 let color_code = self.color_code;
 
                 // Place the character into the buffer at the position (row,col)
@@ -84,9 +85,13 @@ impl ScreenWriter {
                   color_code: color_code,  
                 });
 
-                self.column_position += 1;
+                self.x += 1;
             }
         }
+    }
+
+    pub fn write_char(&mut self, character: char) {
+        self.write_byte(character as u8);
     }
 
     // Converts raw pointer to a safe buffer reference
@@ -96,15 +101,16 @@ impl ScreenWriter {
 
     // Move every character up a row, and clear the last row.
     fn new_line(&mut self) { 
-        for row in 1..BUFFER_HEIGHT {
-            for col in 0..BUFFER_WIDTH {
+        for row in 1..VGA_HEIGHT {
+            for col in 0..VGA_WIDTH {
                 let buffer = self.buffer();
                 let character = buffer.chars[row][col].read();
                 buffer.chars[row - 1][col].write(character);
             }
         }
-        self.clear_row(BUFFER_HEIGHT - 1);
-        self.column_position = 0;
+        let row_ix = self.y;
+        self.clear_row(row_ix);
+        self.x = 0;
     }
 
     fn clear_row(&mut self, row: usize) {
@@ -113,7 +119,7 @@ impl ScreenWriter {
             color_code: self.color_code,
         };
         // Write a blank char across the row
-        for col in 0..BUFFER_WIDTH {
+        for col in 0..VGA_WIDTH {
             self.buffer().chars[row][col].write(blank);
         }
     }
@@ -130,8 +136,11 @@ impl fmt::Write for ScreenWriter {
     }
 }
 
+// Instantiate a screen writer. We use a spin lock to avoid race conditions.
+
 pub static SCREEN_WRITER: Mutex<ScreenWriter> = Mutex::new(ScreenWriter {
-    column_position: 0,
+    x: 0,
+    y: VGA_HEIGHT - 1,
     color_code: ColorCode::new(Color::LightBlue, Color::Black),
     buffer: unsafe { Unique::new_unchecked(VGA_ADDRESS as *mut _) },
 });
@@ -158,7 +167,7 @@ pub fn print(args: fmt::Arguments) {
 
 // A utility function to clear the screen of all characters
 pub fn clear_screen() {
-    for _ in 0..BUFFER_HEIGHT {
+    for _ in 0..VGA_HEIGHT {
         println!("");
     }
 }
