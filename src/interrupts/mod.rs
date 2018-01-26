@@ -160,6 +160,24 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: &mut ExceptionStackF
 // will send an Interrupt Request (IRQ) which will be handled by the IDT in a
 // similar fashion to handling exceptions.
 
+static mut shifted: bool = false;
+
+pub fn change_shift_state(scancode: u8) {
+    let is_keydown: bool = scancode & 0x80 == 0;
+    if is_keydown {
+        match scancode {
+            0x2A | 0x36 => unsafe { shifted = true },
+            _ => (),
+        }
+    } else {
+        let scancode_lower = scancode & !0x80u8;
+        match scancode_lower {
+            0x2A | 0x36 => unsafe { shifted = false },
+            _ => (),
+        }
+    }
+}
+
 extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut ExceptionStackFrame) {
     //println!("The Keyboard Was Pressed:\n{:#?}", stack_frame);
     let scan_code;
@@ -167,6 +185,11 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut Exception
         scan_code = inb(0x60);
         outb(0x20,0x20);
     }
+    change_shift_state(scan_code);
+    unsafe {
+        println!("{}", shifted);
+    }
+    /*
     match scan_code {
         1  => (), // escape
         28 => println!(""), // enter
@@ -186,7 +209,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut Exception
         12 | 74 => print!("-"),
         13 => print!("="),
         14 => (), // backspace
-        15 => print!("    "), // tab
+        15 => print!(" "), // tab
         16 => print!("q"),
         17 => print!("w"),
         18 => print!("e"),
@@ -225,7 +248,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut Exception
         55 => print!("*"),
         78 => print!("+"),
         _ => (),
-    };
+    };*/
 
     
 }
