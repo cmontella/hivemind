@@ -6,6 +6,7 @@ use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
 use spin::Once;
 use x86_64::instructions::port::{inb, outb};
+use vga_buffer::{SCREEN_WRITER, print};
 
 mod gdt;
 mod pic;
@@ -28,7 +29,9 @@ lazy_static! {
         let mut idt = Idt::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         idt.page_fault.set_handler_fn(page_fault_handler);
-        idt.interrupts[1].set_handler_fn(keyboard_interrupt_handler);
+        idt.interrupts[0].set_handler_fn(pit_handler);
+        idt.interrupts[1].set_handler_fn(keyboard_handler);
+        idt.interrupts[8].set_handler_fn(rtc_handler);
         //println!("Set interrupt handlers");
         unsafe {
             idt.double_fault.set_handler_fn(double_fault_handler)
@@ -117,7 +120,6 @@ code is returned with various flags that can be set:
 
 extern "x86-interrupt" fn page_fault_handler(stack_frame: &mut ExceptionStackFrame, error_code: PageFaultErrorCode) {
   println!("Page Fault: {:?}\n{:#?}", error_code, stack_frame);
-  loop{};
 }
 
 // ### Double faults
@@ -160,6 +162,23 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: &mut ExceptionStackF
 // will send an Interrupt Request (IRQ) which will be handled by the IDT in a
 // similar fashion to handling exceptions.
 
+// ### Programmable Interrupt Timer (PIT)
+
+const PIT_DATA0: u8 = 0x40;  // Channel 0 data port (read/write)
+const PIT_DATA1: u8 = 0x41;  // Channel 1 data port (read/write)
+const PIT_DATA2: u8 = 0x42;  // Channel 2 data port (read/write)
+const PIT_CMD:   u8 = 0x43;  // Mode/Command register (write only, a read is ignored)
+
+extern "x86-interrupt" fn pit_handler(stack_frame: &mut ExceptionStackFrame) {
+    //println!("PIT:\n{:#?}", stack_frame);
+    unsafe {
+        outb(0x20,0x20);
+    }
+    {}
+}
+
+// ### Keyboard
+
 static mut shifted: bool = false;
 
 pub fn change_shift_state(scancode: u8) {
@@ -178,7 +197,7 @@ pub fn change_shift_state(scancode: u8) {
     }
 }
 
-extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut ExceptionStackFrame) {
+extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
     //println!("The Keyboard Was Pressed:\n{:#?}", stack_frame);
     let scan_code;
     unsafe {
@@ -186,10 +205,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut Exception
         outb(0x20,0x20);
     }
     change_shift_state(scan_code);
-    unsafe {
-        println!("{}", shifted);
-    }
-    /*
+
     match scan_code {
         1  => (), // escape
         28 => println!(""), // enter
@@ -248,7 +264,16 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(stack_frame: &mut Exception
         55 => print!("*"),
         78 => print!("+"),
         _ => (),
-    };*/
+    };
+}
 
-    
+// ### Real Time Clock (RTC)
+
+extern "x86-interrupt" fn rtc_handler(stack_frame: &mut ExceptionStackFrame) {
+    println!("RTC:\n{:#?}", stack_frame);
+    unsafe {
+        outb(0x20,0x20);
+        outb(0xA0,0x20);
+    }
+    {}
 }
