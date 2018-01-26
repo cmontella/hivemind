@@ -1,8 +1,12 @@
+// # Global Descriptor Table (GDT)
+
+// ## Prelude
+
 use x86_64::structures::tss::TaskStateSegment;
 use x86_64::structures::gdt::SegmentSelector;
 use x86_64::PrivilegeLevel;
 
-// # A Global Descriptor Table (GDT)
+// ## The GDT
 
 pub struct GDT {
     table: [u64; 8],
