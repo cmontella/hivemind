@@ -68,6 +68,7 @@ pub fn init(memory_controller: &mut MemoryController) {
     // Load TSS into GDT
     let mut code_selector = SegmentSelector(0);
     let mut tss_selector = SegmentSelector(0);
+    
     let gdt = GDT.call_once(|| {
         let mut gdt = gdt::GDT::new();
         code_selector = gdt.add_entry(gdt::Descriptor::kernel_code_segment());
@@ -179,6 +180,33 @@ extern "x86-interrupt" fn pit_handler(stack_frame: &mut ExceptionStackFrame) {
 
 // ### Keyboard
 
+// #### Code Page 437
+
+#[derive(Debug)]
+pub enum KeyCode {
+    //Null, LightSmile, DarkSmile, Heart, Diamond, CLub, Bullet, BulletBackground, Circle, CircleBackground, Mars, Venus, EigthNote, SixteenthNote, Sun,
+    //RightTriangle, LeftTriangle, DoubleArrowVertical, DoubleExclaimation, Pilcrow, Section, Bar, DoubleArrowBottom, UpArrow, DownArrow, RightArrow, LeftArrow, RightAngle, DoubleArrowHorz, UpTriangle, DownTriangle,
+    Space = 32, Exclaimation = 33, Quote = 34, Hash = 35, Dollar = 36, Percent = 37, Ampersand = 38, Apostrophe = 39, LeftParenthesis = 40, RightParenthesis = 41, Asterisk = 42, Plus = 43, Comma = 44, Minus = 45, FullStop = 46, Slash = 47,
+    Zero = 48, One = 49, Two = 50, Three = 51,/* Four, Five, Six, Seven, Eight, Nine, Colon, Semicolon, LeftChevron, Equal, RightChevron,  Question,
+    At, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, LeftBracket, BackSlash, RightBracket, Caret, Underscore,
+    Grave, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, LeftBrace, Pipe, RightBrace, Tilde, House,
+    C_Cedilla, u_Umlaut, e_Acute,  a_Circumflex, a_Umlaut, a_Grave, a_Volle, c_Cedilla, e_Circumflex, e_Umlaut, e_Grave, i_Umlaut, i_Circumflex, i_Grave, A_Umlaut, A_Volle, 
+    E_Acute, ae, AE, o_Circumflex, o_Umlaut, o_Grave, u_Circumflex, u_Grave, y_Umlaut, O_Umlaut, U_Umlaut, Cents, PoundSterling, Yen, Pesta, ScriptF,
+    a_Acute, i_Acute, o_acute, u_acute, n_Tilde, N_Tilde, a_Ordinal, o_Ordinal, InvertedQuestion, LeftNegation, RightNegation, Half, Quarter, InvertedExclaimation, LeftAngleQuotes, RightAngleQuotes, 
+    LightBlock, MediumBlock, BoxDrawing179, BoxDrawing180, BoxDrawing181, BoxDrawing182, BoxDrawing183, BoxDrawing184, BoxDrawing185, BoxDrawing186, BoxDrawing187, BoxDrawing188, BoxDrawing189, BoxDrawing190, BoxDrawing191,
+    BoxDrawing192, BoxDrawing193, BoxDrawing194, BoxDrawing195, BoxDrawing196, BoxDrawing197, BoxDrawing198, BoxDrawing199, BoxDrawing200, BoxDrawing201, BoxDrawing202, BoxDrawing203, BoxDrawing204, BoxDrawing205, BoxDrawing206, BoxDrawing207,
+    BoxDrawing208, BoxDrawing209, BoxDrawing210, BoxDrawing211, BoxDrawing212, BoxDrawing213, BoxDrawing214, BoxDrawing215, BoxDrawing216, BoxDrawing217, BoxDrawing218, SolidBlock, BoxDrawing220, BoxDrawing221, BoxDrawing222, BoxDrawing223,
+    alpha, beta, Gamma, pi, Sigma, sigma, mu, tau, Phi, Theta, omega, delta, Lemniscate, phi, epsilon, Intersection, TripleBar, PlusMinus, GreaterThanEqual, LessThanEqual, IntegrateTop, IntegrateBottom, Divide, Approximate, Degree, Bullet2, Interrupt, SquareRoot, NthPower, Squared, Square, NonBreakingSpace,
+    Enter,
+    Escape,
+    BackSpace,
+    F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12,
+    Delete, Home, End, PageUp, PageDown,
+    Tab, CapsLock, LeftShift, RightShift, LeftAlt, RightAlt, LeftControl, RightControl, Windows, NumLock, Insert, PrintScreen, PauseBreak,*/
+    NonBreakingSpace = 255,
+}
+
+
 static mut shifted: bool = false;
 
 pub fn change_shift_state(scancode: u8) {
@@ -199,72 +227,94 @@ pub fn change_shift_state(scancode: u8) {
 
 extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
     //println!("The Keyboard Was Pressed:\n{:#?}", stack_frame);
-    let scan_code;
+    let mut scan_code;
     unsafe {
         scan_code = inb(0x60);
-        outb(0x20,0x20);
+        println!("One: {}",scan_code);
     }
     change_shift_state(scan_code);
+    
+    if scan_code == 224 {
+        unsafe {
+            scan_code = inb(0x60);
+            println!("Two: {}",scan_code);
+        }
+    }
+    
+    unsafe {
+        outb(0x20, 0x20);        
+    }
 
-    match scan_code {
-        1  => (), // escape
-        28 => println!(""), // enter
-        57 => print!(" "),  // space
-        59..68 => (), // f1 - f10
-        87..88 => (), // f11 - f12
-        2 | 79 => print!("1"),
-        3 | 80 => print!("2"),
-        4 | 81 => print!("3"),
-        5 | 75 => print!("4"),
-        6 | 76 => print!("5"),
-        7 | 77 => print!("6"),
-        8 | 71 => print!("7"),
-        9 | 72 => print!("8"),
-        10 | 73 => print!("9"),
-        11 | 82 => print!("0"),
-        12 | 74 => print!("-"),
-        13 => print!("="),
-        14 => (), // backspace
-        15 => print!(" "), // tab
-        16 => print!("q"),
-        17 => print!("w"),
-        18 => print!("e"),
-        19 => print!("r"),
-        20 => print!("t"),
-        21 => print!("y"),
-        22 => print!("u"),
-        23 => print!("i"),
-        24 => print!("o"),
-        25 => print!("p"),
-        26 => print!("["),
-        27 => print!("]"),
-        30 => print!("a"),
-        31 => print!("s"),
-        32 => print!("d"),
-        33 => print!("f"),
-        34 => print!("g"),
-        35 => print!("h"),
-        36 => print!("j"),
-        37 => print!("k"),
-        38 => print!("l"),
-        39 => print!(";"),
-        40 => print!("'"),
-        41 => print!("`"),
-        43 => print!("\\"),
-        44 => print!("z"),
-        45 => print!("x"),
-        46 => print!("c"),
-        47 => print!("v"),
-        48 => print!("b"),
-        49 => print!("n"),
-        50 => print!("m"),
-        51 => print!(","),
-        52 => print!("."),
-        53 => print!("/"),
-        55 => print!("*"),
-        78 => print!("+"),
-        _ => (),
+    let character = match scan_code {
+        /*1  => KeyCode::Escape,
+        28 => KeyCode::Enter,
+        57 => KeyCode::Space,
+        59 => KeyCode::F1,
+        60 => KeyCode::F2,
+        61 => KeyCode::F3,
+        62 => KeyCode::F4,
+        63 => KeyCode::F5,
+        64 => KeyCode::F6,
+        65 => KeyCode::F7,
+        66 => KeyCode::F8,
+        67 => KeyCode::F9,
+        68 => KeyCode::F10,
+        87 => KeyCode::F11,
+        88 => KeyCode::F12,*/
+        2 | 79 => KeyCode::One,
+        3 | 80 => KeyCode::Two,
+        4 | 81 => KeyCode::Three,/*
+        5 | 75 => KeyCode::Four,
+        6 | 76 => KeyCode::Five,
+        7 | 77 => KeyCode::Six,
+        8 | 71 => KeyCode::Seven,
+        9 | 72 => KeyCode::Eight,
+        10 | 73 => KeyCode::Nine,
+        11 | 82 => KeyCode::Zero,
+        12 | 74 => KeyCode::Minus,
+        13 => KeyCode::Equal,
+        14 => KeyCode::BackSpace,
+        15 => KeyCode::Tab,
+        16 => KeyCode::q,
+        17 => KeyCode::w,
+        18 => KeyCode::e,
+        19 => KeyCode::r,
+        20 => KeyCode::t,
+        21 => KeyCode::y,
+        22 => KeyCode::u,
+        23 => KeyCode::i,
+        24 => KeyCode::o,
+        25 => KeyCode::p,
+        26 => KeyCode::LeftBracket,
+        27 => KeyCode::RightBracket,
+        30 => KeyCode::a,
+        31 => KeyCode::s,
+        32 => KeyCode::d,
+        33 => KeyCode::f,
+        34 => KeyCode::g,
+        35 => KeyCode::h,
+        36 => KeyCode::j,
+        37 => KeyCode::k,
+        38 => KeyCode::l,
+        39 => KeyCode::Semicolon,
+        40 => KeyCode::Apostrophe,
+        41 => KeyCode::Grave,
+        43 => KeyCode::BackSlash,
+        44 => KeyCode::z,
+        45 => KeyCode::x,
+        46 => KeyCode::c,
+        47 => KeyCode::v,
+        48 => KeyCode::b,
+        49 => KeyCode::n,
+        50 => KeyCode::m,
+        51 => KeyCode::Comma,
+        52 => KeyCode::FullStop,
+        53 => KeyCode::Slash,
+        55 => KeyCode::Asterisk,
+        78 => KeyCode::Plus,*/
+        _ => KeyCode::NonBreakingSpace,
     };
+    //SCREEN_WRITER.lock().write_byte(character as u8);
 }
 
 // ### Real Time Clock (RTC)
