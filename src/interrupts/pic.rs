@@ -61,12 +61,12 @@ const ICW4_BUF_SEC:   u8 = 0x08;		// Buffered mode/secondary
 const ICW4_BUF_PRIM:  u8 = 0x0C;		// Buffered mode/primary 
 const ICW4_SFNM:      u8 = 0x10;		// Special fully nested (not) 
 
-const PIC1_CMD2: u16 =                    0x20;
-const PIC1_DATA2: u8 =                   0x21;
-const PIC2_CMD2: u16 =                    0xA0;
-const PIC2_DATA2: u8 =                   0xA1;
-const PIC_READ_IRR: u8 =                0x0a;    /* OCW3 irq ready next CMD read */
-const PIC_READ_ISR: u8 =                0x0b;   /* OCW3 irq service next CMD read */
+const PIC1_CMD2:      u16 = 0x20;
+const PIC1_DATA2:     u8  = 0x21;
+const PIC2_CMD2:      u16 = 0xA0;
+const PIC2_DATA2:     u8  = 0xA1;
+const PIC_READ_IRR:   u8  = 0x0a;    /* OCW3 irq ready next CMD read */
+const PIC_READ_ISR:   u8  = 0x0b;   /* OCW3 irq service next CMD read */
 
 
 // ## Modeling the PIC
@@ -113,30 +113,22 @@ impl PIC {
       let pic2_mask: u8 = inb(PIC2_DATA);
 
       // Starts the initialization sequence (in cascade mode)
-      outb(PIC1_COMMAND, ICW1_INIT + ICW1_ICW4);  
-      io_wait();
-      outb(PIC2_COMMAND, ICW1_INIT + ICW1_ICW4);
-      io_wait();
+      outb_wait(PIC1_COMMAND, ICW1_INIT + ICW1_ICW4);  
+      outb_wait(PIC2_COMMAND, ICW1_INIT + ICW1_ICW4);
 
       // ICW2: Primary PIC vector offset
-      outb(PIC1_DATA, 0x20);
-      io_wait();
+      outb_wait(PIC1_DATA, 0x20);
       
       // ICW2: Secondary PIC vector offset
-      outb(PIC2_DATA, 0x28);                 
-      io_wait();
+      outb_wait(PIC2_DATA, 0x28);                 
       
       // ICW3: tell Primary PIC that there is a Secondary PIC at IRQ2 (0000 0100)
-      outb(PIC1_DATA, 4);                       
-      io_wait();
+      outb_wait(PIC1_DATA, 4);                       
 
       // ICW3: tell Secondary PIC its cascade identity (0000 0010)
-      outb(PIC2_DATA, 2);                       
-      io_wait();
-      outb(PIC1_DATA, ICW4_8086);
-      io_wait();
-      outb(PIC2_DATA, ICW4_8086);
-      io_wait();
+      outb_wait(PIC2_DATA, 2);                       
+      outb_wait(PIC1_DATA, ICW4_8086);
+      outb_wait(PIC2_DATA, ICW4_8086);
 
       // Restore saved masks.
       outb(PIC1_DATA, pic1_mask);   
@@ -166,8 +158,9 @@ send to it. Normally we would use a timer to do this, but we need the PIC to
 make one. Instead, we write some data to a safe port 0x80 and that should be 
 enough time.
 */
-fn io_wait() {
+fn outb_wait(port: u16, data: u8) {
   unsafe {
+    outb(port, data);
     outb(0x80,0);
   }
 }
