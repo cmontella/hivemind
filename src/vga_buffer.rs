@@ -1,11 +1,25 @@
+// # Video Graphics Array (VGA) Buffer
+
+
+// ## Prelude
+
 use core::fmt;
 use volatile::Volatile;
 use core::ptr::Unique;
 use spin::Mutex;
 
+// ## Constants
+
+// We know the VGA rendering area is 25 x 80, and rests at memory location 
+// 0xb8000
+
 const VGA_HEIGHT: usize = 25;
 const VGA_WIDTH: usize = 80;
 pub const VGA_ADDRESS: usize = 0xb8000;
+
+// ## Color
+
+// There are 16 colors we can work with.
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
@@ -29,7 +43,8 @@ pub enum Color {
     White       =   15,
 }
 
-// A Color code consists of an 8 bit foreground and background color.
+// A Color code consists of an 8 bit foreground and 8 bit background color.
+// The High bits are the background, while the Low bits are the foreground.
 
 #[derive(Debug, Clone, Copy)]
 struct ColorCode(u8);
@@ -40,19 +55,24 @@ impl ColorCode {
     }
 }
 
+// A Character on the Screen has a character and color code which tells us how
+// to draw it.
+
 #[derive(Debug, Clone, Copy)]
 #[repr(C)] // Lay out struct as in C for correct field ordering.
-struct ScreenChar {
+struct ScreenCharacter {
     ascii_character: u8,
     color_code: ColorCode,
 }
+
+// We represent the screen as a 25 x 80 buffer of ScreenCharacters.
 
 // Volatile tells rust that there are side effects. We use it to make sure Rust
 // does not optimize away printing screen characters, which are the side 
 // effect.
 
 struct Buffer {
-    chars: [[Volatile<ScreenChar>; VGA_WIDTH]; VGA_HEIGHT],
+    chars: [[Volatile<ScreenCharacter>; VGA_WIDTH]; VGA_HEIGHT],
 }
 
 // Create a screen writer type that writes character bytes to a buffer.
@@ -80,7 +100,7 @@ impl ScreenWriter {
                 let color_code = self.color_code;
 
                 // Place the character into the buffer at the position (row,col)
-                self.buffer().chars[row][col].write(ScreenChar {
+                self.buffer().chars[row][col].write(ScreenCharacter {
                   ascii_character: byte,
                   color_code: color_code,  
                 });
@@ -114,7 +134,7 @@ impl ScreenWriter {
     }
 
     fn clear_row(&mut self, row: usize) {
-        let blank = ScreenChar {
+        let blank = ScreenCharacter {
             ascii_character: b' ',
             color_code: self.color_code,
         };
