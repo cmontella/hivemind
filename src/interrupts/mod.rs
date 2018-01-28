@@ -6,7 +6,6 @@ use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtualAddress;
 use spin::Once;
 use x86_64::instructions::port::{inb, outb};
-use vga_buffer::{SCREEN_WRITER, print};
 use x86_64::instructions::interrupts;
 
 mod gdt;
@@ -92,7 +91,6 @@ pub fn init(memory_controller: &mut MemoryController) {
     let pic = PIC.call_once(||{
         let mut pic = pic::PIC::new();
         pic.init();
-        pic.get_irq_register(0x0a);
         pic
     });
 

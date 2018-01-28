@@ -6,7 +6,7 @@ use self::temporary_page::TemporaryPage;
 pub use self::mapper::Mapper;
 use core::ops::{Deref, DerefMut};
 use multiboot2::BootInformation;
-use vga_buffer::VGA_ADDRESS;
+use drivers::vga::VGA_ADDRESS;
 use core::ops::Add;
 
 mod entry;

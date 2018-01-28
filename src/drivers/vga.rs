@@ -13,8 +13,8 @@ use spin::Mutex;
 // We know the VGA rendering area is 25 x 80, and rests at memory location 
 // 0xb8000
 
-const VGA_HEIGHT: usize = 25;
-const VGA_WIDTH: usize = 80;
+pub const VGA_HEIGHT: usize = 25;
+pub const VGA_WIDTH: usize = 80;
 pub const VGA_ADDRESS: usize = 0xb8000;
 
 // ## Color
@@ -164,19 +164,6 @@ pub static SCREEN_WRITER: Mutex<ScreenWriter> = Mutex::new(ScreenWriter {
     color_code: ColorCode::new(Color::LightBlue, Color::Black),
     buffer: unsafe { Unique::new_unchecked(VGA_ADDRESS as *mut _) },
 });
-
-// And now we have everything we need to implement the print! and println! macros
-
-macro_rules! print {
-    ($($arg:tt)*) => ({
-        $crate::vga_buffer::print(format_args!($($arg)*));
-    });
-}
-
-macro_rules! println {
-    ($fmt:expr) => (print!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
-}
 
 // Evaluate arguments before locking the SCREEN_WRITER to avoid a deadlock
 // e.g. println!("{}", { println!("inner"); "outer" });

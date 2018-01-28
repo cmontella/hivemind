@@ -2,7 +2,8 @@
 
 // ## Prelude
 
-use x86_64::instructions::interrupts{outb};
+use x86_64::instructions::interrupts;
+use x86_64::instructions::port::{inb, outb};
 
 // #### Code Page 437
 

@@ -33,9 +33,10 @@ extern crate bit_field;
 extern crate raw_cpuid;
 
 #[macro_use]
-mod vga_buffer;
+mod macros;
 mod memory;
 mod interrupts;
+mod drivers;
 
 use memory::FrameAllocator;
 use linked_list_allocator::LockedHeap;
@@ -45,7 +46,7 @@ use x86_64::instructions;
 #[no_mangle]
 pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     // Start by clearing the screen
-    vga_buffer::clear_screen();
+    drivers::vga::clear_screen();
 
     println!("Booting HiveMind                                                   v0.1.0 alpha");
     
@@ -74,7 +75,7 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     }
 
     // invoke a breakpoint exception
-    x86_64::instructions::interrupts::int3();
+    //x86_64::instructions::interrupts::int3();
 
     // invoke a page fault    
     /*unsafe {
