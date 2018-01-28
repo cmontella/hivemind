@@ -7,6 +7,7 @@ use x86_64::VirtualAddress;
 use spin::Once;
 use x86_64::instructions::port::{inb, outb};
 use x86_64::instructions::interrupts;
+use drivers::keyboard;
 
 mod gdt;
 mod pic;
@@ -183,12 +184,9 @@ extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame
     unsafe {
         interrupts::disable();
     }
-    println!("Keyboard");
+    unsafe { keyboard::read_byte() };
     unsafe {
-        outb(0x20, 0x20);        
-    };
-
-    unsafe {
+        outb(0x20, 0x20);     
         interrupts::enable();
     }
 }

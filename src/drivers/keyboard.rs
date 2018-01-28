@@ -25,114 +25,292 @@ use x86_64::instructions::port::{inb, outb};
 
 // #### Keyboard Key Mappings
 
-// This table represents Scan Code Set 1 for keyboards.
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum KeyCode {
-    // Keydown
-    EscapeDown = 0x01,
-    OneDown   = 0x02,
-    TwoDown   = 0x03,
-    ThreeDown = 0x04,
-    FourDown  = 0x05,
-    FiveDown = 0x06,
-    SixDown  = 0x07,
-    SevenDown = 0x08,
-    EightDown = 0x09,
-    NineDown = 0x0A,
-    ZeroDown = 0x0B,
-    MinusDown = 0x0C,
-    EqualDown = 0x0D,
-    BackspaceDown = 0x0E,
-    TabDown = 0x0F,
-    QDown = 0x10,
-    WDown = 0x11,
-    EDown = 0x12,
-    RDown = 0x13,
-    TDown = 0x14,
-    YDown = 0x15,
-    UDown = 0x16,
-    IDown = 0x17,
-    ODown = 0x18,
-    PDown = 0x19,
-    LeftBracketDown = 0x1A,
-    RightBracketDown = 0x1B,
-    EnterDown = 0x1C,
-    LeftControlDown = 0x1D,
-    ADown = 0x1E,
-    SDown = 0x1F,
-    DDown = 0x20,
-    FDown = 0x21,
-    GDown = 0x22,
-    HDown = 0x23,
-    JDown = 0x24,
-    KDown = 0x25,
-    LDown = 0x26,
-    SemiColonDown = 0x27,
-    ApostropheDown = 0x28,
-    GraveDown = 0x29,
-    LeftShiftDown = 0x2A,
-    BackslashDown = 0x2B,
-    ZDown = 0x2C,
-    XDown = 0x2D,
-    CDown = 0x2E,
-    VDown = 0x2F,
-    BDown = 0x30,
-    NDown = 0x31,
-    MDown = 0x32,
-    CommaDown = 0x33,
-    PeriodDown = 0x34,
-    SlashDown = 0x35,
-    RightShiftDown = 0x36,
-    KeypadAsteriskDown = 0x37,
-    LeftAltDown = 0x38,
-    SpaceDown = 0x39,
-    CapsLockDown = 0x3A,
-    F1Down = 0x3B,
-    F2Down = 0x3C,
-    F3Down = 0x3D,
-    F4Down = 0x3E,
-    F5Down = 0x3F,
-    F6Down = 0x40,
-    F7Down = 0x41,
-    F8Down = 0x42,
-    F9Down = 0x43,
-    F10Down = 0x44,
-    NumberLockDown = 0x45,
-    ScrollLockDown = 0x46,
-    KeypadSevenDown = 0x47,
-    KeypadEightDown = 0x48,
-    KeypadNineDown = 0x49,
-    KeypadMinusDown = 0x4A,
-    KeypadFourDown = 0x4B,
-    KeypadFiveDown = 0x4C,
-    KeypadSixDown = 0x4D,
-    KeypadPlusDown = 0x4E,
-    KeypadOneDown = 0x4F,
-    KeypadTwoDown = 0x50,
-    KeypadThreeDown = 0x51,
-    KeypadZeroDown = 0x52,
-    KeypadPeriodDown = 0x53,
-    F11Down = 0x57,
-    F12Down = 0x58,
-    // Keyup
+    Null, Escape, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Zero, Minus, Equal, Backspace,
+    Tab, Q, W, E, R, T, Y, U, I, O, P, LeftBracket, RightBracket, Enter, 
+    LeftControl, A, S, D, F, G, H, J, K, L, SemiColon, Apostrophe,
+    Grave, LeftShift, Backslash, Z, X, C, V, B, N, M, Comma, Period, Slash, RightShift, KeypadAsterisk,
+    LeftAlt, Space, CapsLock, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10,
+    NumberLock, ScrollLock, KeypadSeven, KeypadEight, KeypadNine, KeypadMinus, KeypadFour, KeypadFive, KeypadSix, KeypadPlus, KeypadOne, KeypadTwo, KeypadThree, KeypadZero, KeypadPeriod,
+    F11, F12, PreviousTrack, NextTrack, KeypadEnter, RightControl, Mute, Calculator, Play, Stop, VolumeDown, VolumeUp, WWWHome, KeypadSlash,
+    RightAlt, Home, CursorUp, PageUp, CursorLeft, CursorRight, End, CursorDown, PageDown, Insert, Delete, LeftGUI, RightGUI, Apps, Power, Sleep, Wake,
+    WWWSearch, WWWFavorites, WWWRefresh, WWWStop, WWWForward, WWWBack,
+    MyComputer, Email, MediaSelect, PrintScreen, PauseBreak,
 }
 
-/*pub enum KeyUpCode {
-    Null,    
-    Exclamation = 33, Quote = 34, Hash = 35, Dollar = 36, Percent = 37, Ampersand = 38, Apostrophe = 39, LeftParenthesis = 40, RightParenthesis = 41, Asterisk = 42, Plus = 43, Comma = 44, Minus = 45, FullStop = 46, Slash = 47,
-    Zero = 48, One = 49, Two = 50, Three = 51, Four = 52, Five = 53, Six = 54, Seven = 55, Eight = 56, Nine = 57, Colon = 58, Semicolon = 59, LeftChevron = 60, Equal = 61, RightChevron = 62,  Question = 63,
-    At = 64, A = 65, B = 66, C = 67, D = 68, E = 69, F = 70, G = 71, H = 72, I = 73, J = 74, K = 75, L = 76, M = 77, N = 78, O = 79, P = 80, Q = 81, R = 82, S = 83, T = 84, U = 85, V = 86, W = 87, X = 88, Y = 89, Z = 90, LeftBracket = 91, BackSlash = 92, RightBracket = 93, Caret = 94, Underscore = 95,
-    Grave = 96, a = 97, b = 98, c = 99, d = 100, e = 101, f = 102, g = 103, h = 104, i = 105, j = 106, k = 107, l = 108, m = 109, n = 110, o = 111, p = 112, q = 113, r = 114, s = 115, t = 116, u = 117, v = 118, w = 119, x = 120, y = 121, z = 122, LeftBrace = 123, Pipe = 124, RightBrace = 125, Tilde = 126,
-    Space = 255, 
-    Enter = 256,
-    Escape = 257,
-    BackSpace = 258,
-    F1 = 259, F2 = 260, F3 = 261, F4 = 262, F5 = 263, F6 = 264, F7 = 265, F8 = 266, F9 = 267, F10 = 268, F11 = 269, F12 = 270,
-    Delete = 271, Home = 272, End = 273, PageUp = 274, PageDown = 275,
-    Tab = 276, CapsLock = 277, LeftShift = 278, RightShift = 279, LeftAlt = 280, RightAlt = 281, LeftControl = 282, RightControl = 283, Windows = 284, NumLock = 285, Insert = 286, PrintScreen = 287, PauseBreak = 288,
-}*/
 
+
+// This table represents Scan Code Set 1 for keyboards.
+
+pub fn scan_to_key(scan_code: u32) -> Option<(KeyCode, KeyState)> {
+    let key_state: (KeyCode, KeyState) = match scan_code {
+        // Key Down
+        0x01 => (KeyCode::Escape, KeyState::Down),
+        0x02 => (KeyCode::One, KeyState::Down),
+        0x03 => (KeyCode::Two, KeyState::Down),
+        0x04 => (KeyCode::Three, KeyState::Down),
+        0x05 => (KeyCode::Four, KeyState::Down),
+        0x06 => (KeyCode::Five, KeyState::Down),
+        0x07 => (KeyCode::Six, KeyState::Down),
+        0x08 => (KeyCode::Seven, KeyState::Down),
+        0x09 => (KeyCode::Eight, KeyState::Down),
+        0x0A => (KeyCode::Nine, KeyState::Down),
+        0x0B => (KeyCode::Zero, KeyState::Down),
+        0x0C => (KeyCode::Minus, KeyState::Down),
+        0x0D => (KeyCode::Equal, KeyState::Down),
+        0x0E => (KeyCode::Backspace, KeyState::Down),
+        0x0F => (KeyCode::Tab, KeyState::Down),
+        0x10 => (KeyCode::Q, KeyState::Down),
+        0x11 => (KeyCode::W, KeyState::Down),
+        0x12 => (KeyCode::E, KeyState::Down),
+        0x13 => (KeyCode::R, KeyState::Down),
+        0x14 => (KeyCode::T, KeyState::Down),
+        0x15 => (KeyCode::Y, KeyState::Down),
+        0x16 => (KeyCode::U, KeyState::Down),
+        0x17 => (KeyCode::I, KeyState::Down),
+        0x18 => (KeyCode::O, KeyState::Down),
+        0x19 => (KeyCode::P, KeyState::Down),
+        0x1A => (KeyCode::LeftBracket, KeyState::Down),
+        0x1B => (KeyCode::RightBracket, KeyState::Down),
+        0x1C => (KeyCode::Enter, KeyState::Down),
+        0x1D => (KeyCode::LeftControl, KeyState::Down),
+        0x1E => (KeyCode::A, KeyState::Down),
+        0x1F => (KeyCode::S, KeyState::Down),
+        0x20 => (KeyCode::D, KeyState::Down),
+        0x21 => (KeyCode::F, KeyState::Down),
+        0x22 => (KeyCode::G, KeyState::Down),
+        0x23 => (KeyCode::H, KeyState::Down),
+        0x24 => (KeyCode::J, KeyState::Down),
+        0x25 => (KeyCode::K, KeyState::Down),
+        0x26 => (KeyCode::L, KeyState::Down),
+        0x27 => (KeyCode::SemiColon, KeyState::Down),
+        0x28 => (KeyCode::Apostrophe, KeyState::Down),
+        0x29 => (KeyCode::Grave, KeyState::Down),
+        0x2A => (KeyCode::LeftShift, KeyState::Down),
+        0x2B => (KeyCode::Backslash, KeyState::Down),
+        0x2C => (KeyCode::Z, KeyState::Down),
+        0x2D => (KeyCode::X, KeyState::Down),
+        0x2E => (KeyCode::C, KeyState::Down),
+        0x2F => (KeyCode::V, KeyState::Down),
+        0x30 => (KeyCode::B, KeyState::Down),
+        0x31 => (KeyCode::N, KeyState::Down),
+        0x32 => (KeyCode::M, KeyState::Down),
+        0x33 => (KeyCode::Comma, KeyState::Down),
+        0x34 => (KeyCode::Period, KeyState::Down),
+        0x35 => (KeyCode::Slash, KeyState::Down),
+        0x36 => (KeyCode::RightShift, KeyState::Down),
+        0x37 => (KeyCode::KeypadAsterisk, KeyState::Down),
+        0x38 => (KeyCode::LeftAlt, KeyState::Down),
+        0x39 => (KeyCode::Space, KeyState::Down),
+        0x3A => (KeyCode::CapsLock, KeyState::Down),
+        0x3B => (KeyCode::F1, KeyState::Down),
+        0x3C => (KeyCode::F2, KeyState::Down),
+        0x3D => (KeyCode::F3, KeyState::Down),
+        0x3E => (KeyCode::F4, KeyState::Down),
+        0x3F => (KeyCode::F5, KeyState::Down),
+        0x40 => (KeyCode::F6, KeyState::Down),
+        0x41 => (KeyCode::F7, KeyState::Down),
+        0x42 => (KeyCode::F8, KeyState::Down),
+        0x43 => (KeyCode::F9, KeyState::Down),
+        0x44 => (KeyCode::F10, KeyState::Down),
+        0x45 => (KeyCode::NumberLock, KeyState::Down),
+        0x46 => (KeyCode::ScrollLock, KeyState::Down),
+        0x47 => (KeyCode::KeypadSeven, KeyState::Down),
+        0x48 => (KeyCode::KeypadEight, KeyState::Down),
+        0x49 => (KeyCode::KeypadNine, KeyState::Down),
+        0x4A => (KeyCode::KeypadMinus, KeyState::Down),
+        0x4B => (KeyCode::KeypadFour, KeyState::Down),
+        0x4C => (KeyCode::KeypadFive, KeyState::Down),
+        0x4D => (KeyCode::KeypadSix, KeyState::Down),
+        0x4E => (KeyCode::KeypadPlus, KeyState::Down),
+        0x4F => (KeyCode::KeypadOne, KeyState::Down),
+        0x50 => (KeyCode::KeypadTwo, KeyState::Down),
+        0x51 => (KeyCode::KeypadThree, KeyState::Down),
+        0x52 => (KeyCode::KeypadZero, KeyState::Down),
+        0x53 => (KeyCode::KeypadPeriod, KeyState::Down),
+        0x57 => (KeyCode::F11, KeyState::Down),
+        0x58 => (KeyCode::F12, KeyState::Down),
+        0xE01C => (KeyCode::KeypadEnter, KeyState::Down),
+        0xE01D => (KeyCode::RightControl, KeyState::Down),
+        0xE020 => (KeyCode::Mute, KeyState::Down),
+        0xE021 => (KeyCode::Calculator, KeyState::Down),
+        0xE022 => (KeyCode::Play, KeyState::Down),
+        0xE024 => (KeyCode::Stop, KeyState::Down),
+        0xE02E => (KeyCode::VolumeDown, KeyState::Down),
+        0xE030 => (KeyCode::VolumeUp, KeyState::Down),
+        0xE032 => (KeyCode::WWWHome, KeyState::Down),
+        0xE035 => (KeyCode::KeypadSlash, KeyState::Down),
+        0xE038 => (KeyCode::RightAlt, KeyState::Down),
+        0xE047 => (KeyCode::Home, KeyState::Down),
+        0xE048 => (KeyCode::CursorUp, KeyState::Down),
+        0xE049 => (KeyCode::PageUp, KeyState::Down),
+        0xE04B => (KeyCode::CursorLeft, KeyState::Down),
+        0xE04D => (KeyCode::CursorRight, KeyState::Down),
+        0xE04F => (KeyCode::End, KeyState::Down),
+        0xE050 => (KeyCode::CursorDown, KeyState::Down),
+        0xE051 => (KeyCode::PageDown, KeyState::Down),
+        0xE052 => (KeyCode::Insert, KeyState::Down),
+        0xE053 => (KeyCode::Delete, KeyState::Down),
+        0xE05B => (KeyCode::LeftGUI, KeyState::Down),
+        0xE05C => (KeyCode::RightGUI, KeyState::Down),
+        0xE05D => (KeyCode::Apps, KeyState::Down),
+        0xE05E => (KeyCode::Power, KeyState::Down),
+        0xE05F => (KeyCode::Sleep, KeyState::Down),
+        0xE063 => (KeyCode::Wake, KeyState::Down),
+        0xE065 => (KeyCode::WWWSearch, KeyState::Down),
+        0xE066 => (KeyCode::WWWFavorites, KeyState::Down),
+        0xE067 => (KeyCode::WWWRefresh, KeyState::Down),
+        0xE068 => (KeyCode::WWWStop, KeyState::Down),
+        0xE069 => (KeyCode::WWWForward, KeyState::Down),
+        0xE06A => (KeyCode::WWWBack, KeyState::Down),
+        0xE06B => (KeyCode::MyComputer, KeyState::Down),
+        0xE06C => (KeyCode::Email, KeyState::Down),
+        0xE06D => (KeyCode::MediaSelect, KeyState::Down),
+        0xE02AE037 => (KeyCode::PrintScreen, KeyState::Down),
+        0xE11D45E19DC5 => (KeyCode::PauseBreak, KeyState::Down),
+
+        // Key Up
+        0x81 => (KeyCode::Escape, KeyState::Up),
+        0x82 => (KeyCode::One, KeyState::Up),
+        0x83 => (KeyCode::Two, KeyState::Up),
+        0x84 => (KeyCode::Three, KeyState::Up),
+        0x85 => (KeyCode::Four, KeyState::Up),
+        0x86 => (KeyCode::Five, KeyState::Up),
+        0x87 => (KeyCode::Six, KeyState::Up),
+        0x88 => (KeyCode::Seven, KeyState::Up),
+        0x89 => (KeyCode::Eight, KeyState::Up),
+        0x8A => (KeyCode::Nine, KeyState::Up),
+        0x8B => (KeyCode::Zero, KeyState::Up),
+        0x8C => (KeyCode::Minus, KeyState::Up),
+        0x8D => (KeyCode::Equal, KeyState::Up),
+        0x8E => (KeyCode::Backspace, KeyState::Up),
+        0x8F => (KeyCode::Tab, KeyState::Up),
+        0x90 => (KeyCode::Q, KeyState::Up),
+        0x91 => (KeyCode::W, KeyState::Up),
+        0x92 => (KeyCode::E, KeyState::Up),
+        0x93 => (KeyCode::R, KeyState::Up),
+        0x94 => (KeyCode::T, KeyState::Up),
+        0x95 => (KeyCode::Y, KeyState::Up),
+        0x96 => (KeyCode::U, KeyState::Up),
+        0x97 => (KeyCode::I, KeyState::Up),
+        0x98 => (KeyCode::O, KeyState::Up),
+        0x99 => (KeyCode::P, KeyState::Up),
+        0x9A => (KeyCode::LeftBracket, KeyState::Up),
+        0x9B => (KeyCode::RightBracket, KeyState::Up),
+        0x9C => (KeyCode::Enter, KeyState::Up),
+        0x9D => (KeyCode::LeftControl, KeyState::Up),
+        0x9E => (KeyCode::A, KeyState::Up),
+        0x9F => (KeyCode::S, KeyState::Up),
+        0xA0 => (KeyCode::D, KeyState::Up),
+        0xA1 => (KeyCode::F, KeyState::Up),
+        0xA2 => (KeyCode::G, KeyState::Up),
+        0xA3 => (KeyCode::H, KeyState::Up),
+        0xA4 => (KeyCode::J, KeyState::Up),
+        0xA5 => (KeyCode::K, KeyState::Up),
+        0xA6 => (KeyCode::L, KeyState::Up),
+        0xA7 => (KeyCode::SemiColon, KeyState::Up),
+        0xA8 => (KeyCode::Apostrophe, KeyState::Up),
+        0xA9 => (KeyCode::Grave, KeyState::Up),
+        0xAA => (KeyCode::LeftShift, KeyState::Up),
+        0xAB => (KeyCode::Backslash, KeyState::Up),
+        0xAC => (KeyCode::Z, KeyState::Up),
+        0xAD => (KeyCode::X, KeyState::Up),
+        0xAE => (KeyCode::C, KeyState::Up),
+        0xAF => (KeyCode::V, KeyState::Up),
+        0xB0 => (KeyCode::B, KeyState::Up),
+        0xB1 => (KeyCode::N, KeyState::Up),
+        0xB2 => (KeyCode::M, KeyState::Up),
+        0xB3 => (KeyCode::Comma, KeyState::Up),
+        0xB4 => (KeyCode::Period, KeyState::Up),
+        0xB5 => (KeyCode::Slash, KeyState::Up),
+        0xB6 => (KeyCode::RightShift, KeyState::Up),
+        0xB7 => (KeyCode::KeypadAsterisk, KeyState::Up),
+        0xB8 => (KeyCode::LeftAlt, KeyState::Up),
+        0xB9 => (KeyCode::Space, KeyState::Up),
+        0xBA => (KeyCode::CapsLock, KeyState::Up),
+        0xBB => (KeyCode::F1, KeyState::Up),
+        0xBC => (KeyCode::F2, KeyState::Up),
+        0xBD => (KeyCode::F3, KeyState::Up),
+        0xBE => (KeyCode::F4, KeyState::Up),
+        0xBF => (KeyCode::F5, KeyState::Up),
+        0xC0 => (KeyCode::F6, KeyState::Up),
+        0xC1 => (KeyCode::F7, KeyState::Up),
+        0xC2 => (KeyCode::F8, KeyState::Up),
+        0xC3 => (KeyCode::F9, KeyState::Up),
+        0xC4 => (KeyCode::F10, KeyState::Up),
+        0xC5 => (KeyCode::NumberLock, KeyState::Up),
+        0xC6 => (KeyCode::ScrollLock, KeyState::Up),
+        0xC7 => (KeyCode::KeypadSeven, KeyState::Up),
+        0xC8 => (KeyCode::KeypadEight, KeyState::Up),
+        0xC9 => (KeyCode::KeypadNine, KeyState::Up),
+        0xCA => (KeyCode::KeypadMinus, KeyState::Up),
+        0xCB => (KeyCode::KeypadFour, KeyState::Up),
+        0xCC => (KeyCode::KeypadFive, KeyState::Up),
+        0xCD => (KeyCode::KeypadSix, KeyState::Up),
+        0xCE => (KeyCode::KeypadPlus, KeyState::Up),
+        0xCF => (KeyCode::KeypadOne, KeyState::Up),
+        0xD0 => (KeyCode::KeypadTwo, KeyState::Up),
+        0xD1 => (KeyCode::KeypadThree, KeyState::Up),
+        0xD2 => (KeyCode::KeypadZero, KeyState::Up),
+        0xD3 => (KeyCode::KeypadPeriod, KeyState::Up),
+        0xD7 => (KeyCode::F11, KeyState::Up),
+        0xD8 => (KeyCode::F12, KeyState::Up),
+        0xE090 => (KeyCode::PreviousTrack, KeyState::Up),
+        0xE099 => (KeyCode::NextTrack, KeyState::Up),
+        0xE09C => (KeyCode::KeypadEnter, KeyState::Up),
+        0xE09D => (KeyCode::RightControl, KeyState::Up),
+        0xE0A0 => (KeyCode::Mute, KeyState::Up),
+        0xE0A1 => (KeyCode::Calculator, KeyState::Up),
+        0xE0A2 => (KeyCode::Play, KeyState::Up),
+        0xE0A4 => (KeyCode::Stop, KeyState::Up),
+        0xE0AE => (KeyCode::VolumeDown, KeyState::Up),
+        0xE0B0 => (KeyCode::VolumeUp, KeyState::Up),
+        0xE0B2 => (KeyCode::WWWHome, KeyState::Up),
+        0xE0B5 => (KeyCode::KeypadSlash, KeyState::Up),
+        0xE0B8 => (KeyCode::RightAlt, KeyState::Up),
+        0xE0C7 => (KeyCode::Home, KeyState::Up),
+        0xE0C8 => (KeyCode::CursorUp, KeyState::Up),
+        0xE0C9 => (KeyCode::PageUp, KeyState::Up),
+        0xE0CB => (KeyCode::CursorLeft, KeyState::Up),
+        0xE0CD => (KeyCode::CursorRight, KeyState::Up),
+        0xE0CF => (KeyCode::End, KeyState::Up),
+        0xE0D0 => (KeyCode::CursorDown, KeyState::Up),
+        0xE0D1 => (KeyCode::PageDown, KeyState::Up),
+        0xE0D2 => (KeyCode::Insert, KeyState::Up),
+        0xE0D3 => (KeyCode::Delete, KeyState::Up),
+        0xE0DB => (KeyCode::LeftGUI, KeyState::Up),
+        0xE0DC => (KeyCode::RightGUI, KeyState::Up),
+        0xE0DD => (KeyCode::Apps, KeyState::Up),
+        0xE0DE => (KeyCode::Power, KeyState::Up),
+        0xE0DF => (KeyCode::Sleep, KeyState::Up),
+        0xE0E3 => (KeyCode::Wake, KeyState::Up),
+        0xE0E5 => (KeyCode::WWWSearch, KeyState::Up),
+        0xE0E6 => (KeyCode::WWWFavorites, KeyState::Up),
+        0xE0E7 => (KeyCode::WWWRefresh, KeyState::Up),
+        0xE0E8 => (KeyCode::WWWStop, KeyState::Up),
+        0xE0E9 => (KeyCode::WWWForward, KeyState::Up),
+        0xE0EA => (KeyCode::WWWBack, KeyState::Up),
+        0xE0EB => (KeyCode::MyComputer, KeyState::Up),
+        0xE0EC => (KeyCode::Email, KeyState::Up),
+        0xE0ED => (KeyCode::MediaSelect, KeyState::Up),
+        0xE0B7E0AA => (KeyCode::PrintScreen, KeyState::Up),
+        _ => (KeyCode::Null, KeyState::Null),
+    };
+
+    if key != KeyCode::Null {
+        Some(key_state)
+    } else {
+        None
+    } 
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum KeyState {
+    Null,
+    Down,
+    Up,
+}
 
 static mut shifted: bool = false;
 
@@ -152,43 +330,29 @@ pub fn change_shift_state(scancode: u8) {
     }
 }
 
-fn keyboard_handler() {
-    unsafe {
-        interrupts::disable();
-    }
-    println!("Keyboard");
-    //let mut scan_codes: [u8; 6]  = [255; 6];
 
-    /*
-    let mut x = 0xE1;
-    x = x << 8 | 0x1D;
-    x = x << 8 | 0x45;
-    x = x << 8 | 0xE1;
-    x = x << 8 | 0x9D;
-    x = x << 8 | 0xC5;
-    let PauseBreak = 0xE11D45E19DC5;
-    println!("{:b}", x);
-    println!("{}", PauseBreak == x);
-    //println!("{:?}", x == y);*/
-    /*
+static mut current_byte: u32 = 0;
 
-    println!("{} {:b}", scan_code, scan_code);
-    print!("\n");
-    */
-    let scan_code = unsafe { inb(0x60) };
-    let foo = scan_code as *const KeyCode;
-    
-    //println!("{:x}", KeyCode::ADown as u8);
+pub unsafe fn read_byte() {
 
-    unsafe {
-        outb(0x20, 0x20);        
+    let scan_code = inb(0x60);
+    let full_code = scan_code as u32 | current_byte;
+    let key_code = scan_to_key(full_code);
+
+    match key_code {
+        Some((code, state)) => {
+            current_byte = 0;
+            if state == KeyState::Down {
+                print!("{:?}", code)
+            }
+            
+        },
+        None => {
+            current_byte = full_code << 8;
+        },
     };
-
-    unsafe {
-        interrupts::enable();
-    }
 }
-
+/*
 fn getScancode() -> u8 {
     let mut c: u8 = 0;
     loop {
@@ -328,3 +492,4 @@ impl Keyboard {
         character*/
     }
 }
+*/
