@@ -95,6 +95,17 @@ pub fn init(memory_controller: &mut MemoryController) {
         pic
     });
 
+    println!("Enabling RTC");
+    // Turn on RTC
+    unsafe {
+        outb(0x70, 0x8B);		    // select register B, and disable NMI
+        let prev = inb(0x71);	    // read the current value of register B
+        outb(0x70, 0x8B);		    // set the index again (a read will reset the index to register D)
+        outb(0x71, prev | 0x40);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
+    }
+    println!("RTC Enabled");
+
+
 }
 
 // ## Exception Handlers
@@ -175,7 +186,6 @@ extern "x86-interrupt" fn pit_handler(stack_frame: &mut ExceptionStackFrame) {
     unsafe {
         outb(0x20,0x20);
     }
-    {}
 }
 
 // ### Keyboard
@@ -194,10 +204,12 @@ extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame
 // ### Real Time Clock (RTC)
 
 extern "x86-interrupt" fn rtc_handler(stack_frame: &mut ExceptionStackFrame) {
-    println!("RTC:\n{:#?}", stack_frame);
     unsafe {
-        outb(0x20,0x20);
-        outb(0xA0,0x20);
+        interrupts::disable();
+        outb(0x70, 0x0C);	// select register C
+        inb(0x71);		    // just throw away contents
+        outb(0x20,0x20);    // Send Ack to PIC 1
+        outb(0xA0,0x20);    // Send ACK to PIC 2
+        interrupts::enable();
     }
-    {}
 }
