@@ -298,11 +298,10 @@ pub fn scan_to_key(scan_code: u32) -> Option<(KeyCode, KeyState)> {
         _ => (KeyCode::Null, KeyState::Null),
     };
 
-    if key != KeyCode::Null {
-        Some(key_state)
-    } else {
-        None
-    } 
+    match key_state {
+        (KeyCode::Null, _) => None,
+        _ => Some(key_state),
+    }
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
