@@ -19,7 +19,6 @@ const DOUBLE_FAULT_IST_INDEX: usize = 0;
 
 static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<gdt::GDT> = Once::new();
-static PIC: Once<pic::PIC> = Once::new();
 
 // ## Create and Initialize the Interrupt Descriptor Table (IDT)
 
@@ -33,6 +32,7 @@ lazy_static! {
         idt.interrupts[0].set_handler_fn(pit_handler);
         idt.interrupts[1].set_handler_fn(keyboard_handler);
         idt.interrupts[8].set_handler_fn(rtc_handler);
+        idt.interrupts[12].set_handler_fn(mouse_handler);
         //println!("Set interrupt handlers");
         unsafe {
             idt.double_fault.set_handler_fn(double_fault_handler)
@@ -89,11 +89,7 @@ pub fn init(memory_controller: &mut MemoryController) {
     IDT.load();
 
     // Initialize PIC
-    let pic = PIC.call_once(||{
-        let mut pic = pic::PIC::new();
-        pic.init();
-        pic
-    });
+    pic::pic.lock().init();   
 
     println!("Enabling RTC");
     // Turn on RTC
@@ -205,4 +201,10 @@ extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame
 
 extern "x86-interrupt" fn rtc_handler(stack_frame: &mut ExceptionStackFrame) {
     rtc::init();
+}
+
+// ### Mouse
+
+extern "x86-interrupt" fn mouse_handler(stack_frame: &mut ExceptionStackFrame) {
+    println!("Mouse:\n{:#?}", stack_frame);
 }
