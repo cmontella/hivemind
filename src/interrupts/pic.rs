@@ -38,6 +38,7 @@ IRQ	   Description
 // ## Prelude
 
 use x86_64::instructions::port::{inb, outb};
+use spin::Mutex;
 
 // ## Some Constants
 
@@ -163,4 +164,7 @@ fn outb_wait(port: u16, data: u8) {
     outb(port, data);
     outb(0x80,0);
   }
+}
+lazy_static! {
+  pub static ref pic: Mutex<PIC> = Mutex::new(PIC::new());
 }
