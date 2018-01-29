@@ -73,14 +73,16 @@ const PIC_READ_ISR:   u8  = 0x0b;   /* OCW3 irq service next CMD read */
 // ## Modeling the PIC
 
 pub struct PIC {
-
+  initialized: bool,
 }
 
 impl PIC {
 
   // Create a new PIC
   pub fn new() -> PIC {
-    PIC{}
+    PIC { 
+      initialized: false,
+    }
   }
 
   /*
@@ -107,7 +109,7 @@ impl PIC {
   - How it is wired to primary/secondary. (ICW3)
   - Gives additional information about the environment. (ICW4)
   */
-  pub fn init(&self) {
+  pub fn init(&mut self) {
     unsafe {
       // Save masks
       let pic1_mask: u8 = inb(PIC1_DATA);
@@ -135,6 +137,7 @@ impl PIC {
       outb(PIC1_DATA, pic1_mask);   
       outb(PIC2_DATA, pic2_mask);
     };
+    self.initialized = true;
   }
 
   pub fn get_irq_register(&self, ocw3: u8) -> u16 {
@@ -165,6 +168,7 @@ fn outb_wait(port: u16, data: u8) {
     outb(0x80,0);
   }
 }
+
 lazy_static! {
   pub static ref pic: Mutex<PIC> = Mutex::new(PIC::new());
 }

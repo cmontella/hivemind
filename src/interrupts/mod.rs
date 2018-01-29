@@ -91,15 +91,8 @@ pub fn init(memory_controller: &mut MemoryController) {
     // Initialize PIC
     pic::pic.lock().init();   
 
-    println!("Enabling RTC");
     // Turn on RTC
-    unsafe {
-        outb(0x70, 0x8B);		    // select register B, and disable NMI
-        let prev = inb(0x71);	    // read the current value of register B
-        outb(0x70, 0x8B);		    // set the index again (a read will reset the index to register D)
-        outb(0x71, prev | 0x40);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
-    }
-    println!("RTC Enabled");
+    rtc::rtc.lock().init();
 
 
 }
@@ -200,7 +193,7 @@ extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame
 // ### Real Time Clock (RTC)
 
 extern "x86-interrupt" fn rtc_handler(stack_frame: &mut ExceptionStackFrame) {
-    rtc::init();
+    rtc::rtc.lock().read_byte();
 }
 
 // ### Mouse
