@@ -7,7 +7,7 @@ use x86_64::VirtualAddress;
 use spin::Once;
 use x86_64::instructions::port::{inb, outb};
 use x86_64::instructions::interrupts;
-use drivers::keyboard;
+use drivers::{keyboard, rtc};
 
 mod gdt;
 mod pic;
@@ -204,12 +204,5 @@ extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame
 // ### Real Time Clock (RTC)
 
 extern "x86-interrupt" fn rtc_handler(stack_frame: &mut ExceptionStackFrame) {
-    unsafe {
-        interrupts::disable();
-        outb(0x70, 0x0C);	// select register C
-        inb(0x71);		    // just throw away contents
-        outb(0x20,0x20);    // Send Ack to PIC 1
-        outb(0xA0,0x20);    // Send ACK to PIC 2
-        interrupts::enable();
-    }
+    rtc::init();
 }
