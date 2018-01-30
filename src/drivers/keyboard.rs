@@ -7,6 +7,7 @@ use x86_64::instructions::port::{inb, outb};
 use spin::Mutex;
 use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
+use database;
 
 // #### Code Page 437
 
@@ -215,9 +216,10 @@ impl Keyboard {
                     self.current_byte = 0;
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
-                        //println!("{:?}", code);   
+                        println!("{:?}", code);   
                         self.key_map[code as usize] = (code, state);   
-                        self.sync();               
+                        self.sync();   
+                        println!("{:?}", database::database.lock().store);            
                     }
                 },
                 None => {
@@ -230,9 +232,12 @@ impl Keyboard {
     
     fn sync(&self) {
         for &(code, state) in self.key_map.iter() {
+            let mut db_lock = database::database.lock();
             if state == KeyState::Down {
-                println!("{:?} {:?}", code, state);
-            }
+                db_lock.store.insert(code as u8, state as u8);
+            } else {
+                db_lock.store.remove(&(code as u8));
+            }            
         }
     }
 }
