@@ -42,6 +42,7 @@ use memory::FrameAllocator;
 use linked_list_allocator::LockedHeap;
 use raw_cpuid::CpuId;
 use x86_64::instructions;
+use alloc::BTreeMap;
 
 #[no_mangle]
 pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {

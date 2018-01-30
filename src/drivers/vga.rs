@@ -47,10 +47,10 @@ pub enum Color {
 // The High bits are the background, while the Low bits are the foreground.
 
 #[derive(Debug, Clone, Copy)]
-struct ColorCode(u8);
+pub struct ColorCode(u8);
 
 impl ColorCode {
-    const fn new(foreground: Color, background: Color) -> ColorCode {
+    pub const fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 }
@@ -85,7 +85,7 @@ pub struct ScreenWriter {
 }
 
 impl ScreenWriter {
-    pub fn write_byte(&mut self, byte: u8) {
+    pub fn write_byte(&mut self, byte: u8, color_code: ColorCode) {
         match byte {
             // Move to a new line on a new line char
             b'\n' => self.new_line(),
@@ -97,7 +97,6 @@ impl ScreenWriter {
                 }
                 let row = self.y;
                 let col = self.x;
-                let color_code = self.color_code;
 
                 // Place the character into the buffer at the position (row,col)
                 self.buffer().chars[row][col].write(ScreenCharacter {
@@ -110,8 +109,8 @@ impl ScreenWriter {
         }
     }
 
-    pub fn write_char(&mut self, character: char) {
-        self.write_byte(character as u8);
+    pub fn write_char(&mut self, character: char, color_code: ColorCode) {
+        self.write_byte(character as u8, color_code);
     }
 
     // Converts raw pointer to a safe buffer reference
@@ -150,7 +149,8 @@ impl ScreenWriter {
 impl fmt::Write for ScreenWriter {
     fn write_str(&mut self, string: &str) -> fmt::Result {
         for byte in string.bytes() {
-            self.write_byte(byte);
+            let color_code = self.color_code;
+            self.write_byte(byte, color_code);
         }
         Ok(())
     }
