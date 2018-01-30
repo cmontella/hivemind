@@ -93,8 +93,8 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
 
     unsafe {
         // Keyboard interrupts only
-        //instructions::port::outb(0x21,0xfd); 
-        //instructions::port::outb(0xa1,0xff);
+        instructions::port::outb(0x21,0xfd); 
+        instructions::port::outb(0xa1,0xff);
         // Enable interrupts
         instructions::interrupts::enable();
     }
