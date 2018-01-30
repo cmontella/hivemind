@@ -4,6 +4,8 @@
 
 use x86_64::instructions::interrupts;
 use x86_64::instructions::port::{inb, outb};
+use spin::Mutex;
+use alloc;
 
 // #### Code Page 437
 
@@ -256,7 +258,6 @@ bitflags!{
 
 bitflags!{
     pub struct ControlFlags: u64 {
-        const Empty = 0;
         const Escape = 1 << 0;
         const Enter = 1 << 1;
         const LeftControl = 1 << 2;
@@ -321,21 +322,7 @@ bitflags!{
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/*
 static mut shifted: bool = false;
 
 pub fn change_shift_state(scancode: u8) {
@@ -352,45 +339,49 @@ pub fn change_shift_state(scancode: u8) {
             _ => (),
         }
     }
-}
-
-
-static mut current_byte: u32 = 0;
-
-pub unsafe fn read_byte() {
-
-    let scan_code = inb(0x60);
-    let full_code = scan_code as u32 | current_byte;
-    let key_code = scan_to_key(full_code);
-
-    match key_code {
-        Some((code, state)) => {
-            current_byte = 0;
-            if state == KeyState::Down {
-                print!("{:?}", code)
-            }
-            
-        },
-        None => {
-            current_byte = full_code << 8;
-        },
-    };
-    outb(0x20, 0x20);
-}
+}*/
 
 
 pub struct Keyboard {
-    pub control_flags: ControlFlags,
+    pub control_flags: u8,
+    pub current_byte: u32,
 }
 
 impl Keyboard {
     pub fn new() -> Keyboard {
         Keyboard {
-            control_flags: ControlFlags::Escape,
+            control_flags: 0,
+            current_byte: 0,
+        }
+    }
+
+    pub fn read_byte(&mut self) {
+        unsafe {
+            let scan_code = inb(0x60);
+            let full_code = scan_code as u32 | self.current_byte;
+            let key_code = scan_to_key(full_code);
+
+            match key_code {
+                Some((code, state)) => {
+                    self.current_byte = 0;
+                    if state == KeyState::Down {
+                        print!("{:?}", code)
+                    }
+                    
+                },
+                None => {
+                    self.current_byte = full_code << 8;
+                },
+            };
+            outb(0x20, 0x20);
         }
     }
 }
 
+
+lazy_static! {
+    pub static ref keyboard: Mutex<Keyboard> = Mutex::new(Keyboard::new());
+}
 
 /*
 fn getScancode() -> u8 {

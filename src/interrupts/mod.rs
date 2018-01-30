@@ -180,7 +180,7 @@ extern "x86-interrupt" fn pit_handler(stack_frame: &mut ExceptionStackFrame) {
 extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
     unsafe {
         interrupts::disable();
-        keyboard::read_byte();
+        keyboard::keyboard.lock().read_byte();
         interrupts::enable();
     }
 }
