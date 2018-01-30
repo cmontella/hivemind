@@ -37,6 +37,7 @@ mod macros;
 mod memory;
 mod interrupts;
 mod drivers;
+mod database;
 
 use memory::FrameAllocator;
 use linked_list_allocator::LockedHeap;
@@ -99,7 +100,9 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
         // Enable interrupts
         instructions::interrupts::enable();
     }
+
     
+    database::database.lock().init();
 
     loop {}
 }
