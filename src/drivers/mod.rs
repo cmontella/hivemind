@@ -10,3 +10,4 @@ the OS to send data to and receive data from peripherals.
 pub mod keyboard;
 pub mod vga;
 pub mod rtc;
+pub mod pic;

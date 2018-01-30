@@ -7,10 +7,9 @@ use x86_64::VirtualAddress;
 use spin::Once;
 use x86_64::instructions::port::{inb, outb};
 use x86_64::instructions::interrupts;
-use drivers::{keyboard, rtc};
+use drivers::{keyboard, rtc, pic};
 
 mod gdt;
-mod pic;
 
 // The zeroth IST entry is the double fault stack. Any other one would work,
 // but this is fine.
@@ -29,10 +28,9 @@ lazy_static! {
         let mut idt = Idt::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
         idt.page_fault.set_handler_fn(page_fault_handler);
-        idt.interrupts[0].set_handler_fn(pit_handler);
+        //idt.interrupts[0].set_handler_fn(pit_handler);
         idt.interrupts[1].set_handler_fn(keyboard_handler);
-        idt.interrupts[8].set_handler_fn(rtc_handler);
-        idt.interrupts[12].set_handler_fn(mouse_handler);
+        //idt.interrupts[8].set_handler_fn(rtc_handler);
         //println!("Set interrupt handlers");
         unsafe {
             idt.double_fault.set_handler_fn(double_fault_handler)
@@ -182,10 +180,7 @@ extern "x86-interrupt" fn pit_handler(stack_frame: &mut ExceptionStackFrame) {
 extern "x86-interrupt" fn keyboard_handler(stack_frame: &mut ExceptionStackFrame) {
     unsafe {
         interrupts::disable();
-    }
-    unsafe { keyboard::read_byte() };
-    unsafe {
-        outb(0x20, 0x20);     
+        keyboard::read_byte();
         interrupts::enable();
     }
 }
