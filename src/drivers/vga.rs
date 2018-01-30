@@ -85,7 +85,7 @@ pub struct ScreenWriter {
 }
 
 impl ScreenWriter {
-    pub fn write_byte(&mut self, byte: u8, color_code: ColorCode) {
+    pub fn write_byte(&mut self, byte: u8, color_code: ColorCode, row: usize, col: usize) {
         match byte {
             // Move to a new line on a new line char
             b'\n' => self.new_line(),
@@ -95,8 +95,6 @@ impl ScreenWriter {
                 if self.x >= VGA_WIDTH {
                     self.new_line();
                 }
-                let row = self.y;
-                let col = self.x;
 
                 // Place the character into the buffer at the position (row,col)
                 self.buffer().chars[row][col].write(ScreenCharacter {
@@ -109,8 +107,8 @@ impl ScreenWriter {
         }
     }
 
-    pub fn write_char(&mut self, character: char, color_code: ColorCode) {
-        self.write_byte(character as u8, color_code);
+    pub fn write_char(&mut self, character: char, color_code: ColorCode, row: usize, col: usize) {
+        self.write_byte(character as u8, color_code, row, col);
     }
 
     // Converts raw pointer to a safe buffer reference
@@ -150,7 +148,9 @@ impl fmt::Write for ScreenWriter {
     fn write_str(&mut self, string: &str) -> fmt::Result {
         for byte in string.bytes() {
             let color_code = self.color_code;
-            self.write_byte(byte, color_code);
+            let row = self.y;
+            let col = self.x;
+            self.write_byte(byte, color_code, row, col);
         }
         Ok(())
     }
