@@ -7,7 +7,8 @@ use x86_64::VirtualAddress;
 use spin::Once;
 use x86_64::instructions::port::{inb, outb};
 use x86_64::instructions::interrupts;
-use drivers::{keyboard, rtc, pic};
+use drivers::{keyboard};
+use arch::x86_64::{rtc, pic};
 
 mod gdt;
 

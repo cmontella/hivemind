@@ -38,6 +38,7 @@ mod memory;
 mod interrupts;
 mod drivers;
 mod database;
+mod arch;
 
 use memory::FrameAllocator;
 use linked_list_allocator::LockedHeap;

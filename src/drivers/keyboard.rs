@@ -11,21 +11,22 @@ use database;
 
 // #### Code Page 437
 
-/*
-    Null = 0,//, LightSmile, DarkSmile, Heart, Diamond, CLub, Bullet, BulletBackground, Circle, CircleBackground, Mars, Venus, EighthNote, SixteenthNote, Sun,
-    //RightTriangle, LeftTriangle, DoubleArrowVertical, DoubleExclamation, Pilcrow, Section, Bar, DoubleArrowBottom, UpArrow, DownArrow, RightArrow, LeftArrow, RightAngle, DoubleArrowHorz, UpTriangle, DownTriangle,
-    Space = 32, Exclamation = 33, Quote = 34, Hash = 35, Dollar = 36, Percent = 37, Ampersand = 38, Apostrophe = 39, LeftParenthesis = 40, RightParenthesis = 41, Asterisk = 42, Plus = 43, Comma = 44, Minus = 45, FullStop = 46, Slash = 47,
-    Zero = 48, One = 49, Two = 50, Three = 51, Four = 52, Five = 53, Six = 54, Seven = 55, Eight = 56, Nine = 57, Colon = 58, Semicolon = 59, LeftChevron = 60, Equal = 61, RightChevron = 62,  Question = 63,
-    At = 64, A = 65, B = 66, C = 67, D = 68, E = 69, F = 70, G = 71, H = 72, I = 73, J = 74, K = 75, L = 76, M = 77, N = 78, O = 79, P = 80, Q = 81, R = 82, S = 83, T = 84, U = 85, V = 86, W = 87, X = 88, Y = 89, Z = 90, LeftBracket = 91, BackSlash = 92, RightBracket = 93, Caret = 94, Underscore = 95,
-    Grave = 96, a = 97, b = 98, c = 99, d = 100, e = 101, f = 102, g = 103, h = 104, i = 105, j = 106, k = 107, l = 108, m = 109, n = 110, o = 111, p = 112, q = 113, r = 114, s = 115, t = 116, u = 117, v = 118, w = 119, x = 120, y = 121, z = 122, LeftBrace = 123, Pipe = 124, RightBrace = 125, Tilde = 126, House = 127,
-    /*C_Cedilla, u_Umlaut, e_Acute,  a_Circumflex, a_Umlaut, a_Grave, a_Volle, c_Cedilla, e_Circumflex, e_Umlaut, e_Grave, i_Umlaut, i_Circumflex, i_Grave, A_Umlaut, A_Volle, 
+#[repr(u8)]
+pub enum CharacterCode {
+    Null, LightSmile, DarkSmile, Heart, Diamond, Club, Spade, Bullet, BulletBackground, Circle, CircleBackground, Mars, Venus, EighthNote, SixteenthNote, Sun,
+    RightTriangle, LeftTriangle, DoubleArrowVertical, DoubleExclamation, Pilcrow, Section, Bar, DoubleArrowBottom, UpArrow, DownArrow, RightArrow, LeftArrow, RightAngle, DoubleArrowHorz, UpTriangle, DownTriangle,
+    Space, Exclamation, Quote, Hash, Dollar, Percent, Ampersand, Apostrophe, LeftParenthesis, RightParenthesis, Asterisk, Plus, Comma, Minus, FullStop, Slash,
+    Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Colon, Semicolon, LeftChevron, Equal, RightChevron,  Question,
+    At, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, LeftBracket, BackSlash, RightBracket, Caret, Underscore,
+    Grave, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, LeftBrace, Pipe, RightBrace, Tilde, House,
+    C_Cedilla, u_Umlaut, e_Acute,  a_Circumflex, a_Umlaut, a_Grave, a_Volle, c_Cedilla, e_Circumflex, e_Umlaut, e_Grave, i_Umlaut, i_Circumflex, i_Grave, A_Umlaut, A_Volle, 
     E_Acute, ae, AE, o_Circumflex, o_Umlaut, o_Grave, u_Circumflex, u_Grave, y_Umlaut, O_Umlaut, U_Umlaut, Cents, PoundSterling, Yen, Pesta, ScriptF,
     a_Acute, i_Acute, o_acute, u_acute, n_Tilde, N_Tilde, a_Ordinal, o_Ordinal, InvertedQuestion, LeftNegation, RightNegation, Half, Quarter, InvertedExclamation, LeftAngleQuotes, RightAngleQuotes, 
     LightBlock, MediumBlock, BoxDrawing179, BoxDrawing180, BoxDrawing181, BoxDrawing182, BoxDrawing183, BoxDrawing184, BoxDrawing185, BoxDrawing186, BoxDrawing187, BoxDrawing188, BoxDrawing189, BoxDrawing190, BoxDrawing191,
     BoxDrawing192, BoxDrawing193, BoxDrawing194, BoxDrawing195, BoxDrawing196, BoxDrawing197, BoxDrawing198, BoxDrawing199, BoxDrawing200, BoxDrawing201, BoxDrawing202, BoxDrawing203, BoxDrawing204, BoxDrawing205, BoxDrawing206, BoxDrawing207,
     BoxDrawing208, BoxDrawing209, BoxDrawing210, BoxDrawing211, BoxDrawing212, BoxDrawing213, BoxDrawing214, BoxDrawing215, BoxDrawing216, BoxDrawing217, BoxDrawing218, SolidBlock, BoxDrawing220, BoxDrawing221, BoxDrawing222, BoxDrawing223,
-    alpha, beta, Gamma, pi, Sigma, sigma, mu, tau, Phi, Theta, omega, delta, Lemniscate, phi, epsilon, Intersection, TripleBar, PlusMinus, GreaterThanEqual, LessThanEqual, IntegrateTop, IntegrateBottom, Divide, Approximate, Degree, Bullet2, Interrupt, SquareRoot, NthPower, Squared, Square, */
-*/
+    alpha, beta, Gamma, pi, Sigma, sigma, mu, tau, Phi, Theta, omega, delta, Lemniscate, phi, epsilon, Intersection, TripleBar, PlusMinus, GreaterThanEqual, LessThanEqual, IntegrateTop, IntegrateBottom, Divide, Approximate, Degree, Bullet2, Interrupt, SquareRoot, NthPower, Squared, Square,
+}
 
 // #### Keyboard Key Mappings
 
@@ -176,7 +177,6 @@ pub fn scan_to_key(scan_code: u32) -> Option<(KeyCode, KeyState)> {
         _ => (KeyCode::Null, KeyState::Null),
     };
 
-
     match key_state {
         (KeyCode::Null, _) => None,
         _ => Some(key_state),
@@ -216,10 +216,8 @@ impl Keyboard {
                     self.current_byte = 0;
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
-                        println!("{:?}", code);   
                         self.key_map[code as usize] = (code, state);   
                         self.sync();   
-                        println!("{:?}", database::database.lock().store);            
                     }
                 },
                 None => {
