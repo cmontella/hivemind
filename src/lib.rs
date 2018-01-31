@@ -11,9 +11,12 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 #![feature(abi_x86_interrupt)]
+#![allow(non_upper_case_globals)]
+#![allow(non_camel_case_types)]
 #![feature(ptr_internals)]
 #![feature(asm)]
 #![feature(exclusive_range_pattern)]
+
 
 extern crate rlibc;
 extern crate volatile;
@@ -182,7 +185,7 @@ fn print_cpu_info() {
 }
 
 fn print_header(header: &str) {
-    println!("-------------------------------------------------------------------------------");
+    println!("--------------------------------------------------------------------------------");
     println!("{}:", header);
-    println!("-------------------------------------------------------------------------------");
+    println!("--------------------------------------------------------------------------------");
 }
