@@ -8,6 +8,9 @@ use spin::Mutex;
 use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use database;
+use interrupts::event;
+use database::transaction::{Transaction, Change, Value, ChangeType};
+use alloc::String;
 
 // #### Code Page 437
 
@@ -217,7 +220,19 @@ impl Keyboard {
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
-                        self.sync();   
+
+                        let mut change = Change::from_eav("#keyboard/event/keydown", "key", Value::from_str("A"));
+                        println!("{:?}", change);
+                        let mut transaction = Transaction::new();
+                        if state == KeyState::Down {
+                            change.kind = ChangeType::Add;
+                            transaction.adds.push(change);
+                        } else {
+                            change.kind = ChangeType::Remove;
+                            transaction.removes.push(change);
+                        }
+                        
+                        self.sync();
                     }
                 },
                 None => {
