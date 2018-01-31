@@ -11,6 +11,7 @@ use drivers::{keyboard};
 use arch::x86_64::{rtc, pic};
 
 mod gdt;
+pub mod event;
 
 // The zeroth IST entry is the double fault stack. Any other one would work,
 // but this is fine.
