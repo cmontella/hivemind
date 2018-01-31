@@ -105,10 +105,11 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
         instructions::interrupts::enable();
     }
 
-    
-    database::database.lock().init();
+    {    
+        database::database.lock().init();
+    }
 
-    loop {}
+    loop { }
 }
 
 #[lang = "eh_personality"] extern fn eh_personality() {}
