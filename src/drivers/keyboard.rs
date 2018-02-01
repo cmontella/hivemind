@@ -220,9 +220,8 @@ impl Keyboard {
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
-
-                        let mut change = Change::from_eav("#keyboard/event/keydown", "key", Value::from_str("A"));
-                        println!("{:?}", change);
+                        let code_str = format!("{:?}", code);
+                        let mut change = Change::from_eav("#keyboard/event/keydown", "key", Value::from_str(&code_str));
                         let mut transaction = Transaction::new();
                         if state == KeyState::Down {
                             change.kind = ChangeType::Add;
@@ -231,8 +230,7 @@ impl Keyboard {
                             change.kind = ChangeType::Remove;
                             transaction.removes.push(change);
                         }
-                        
-                        self.sync();
+                        database::database.lock().insert_transaction(transaction);
                     }
                 },
                 None => {
@@ -240,17 +238,6 @@ impl Keyboard {
                 },
             };
             outb(0x20, 0x20);
-        }
-    }
-    
-    fn sync(&self) {
-        for &(code, state) in self.key_map.iter() {
-            let mut db_lock = database::database.lock();
-            if state == KeyState::Down {
-                db_lock.store.insert(code as u8, state as u8);
-            } else {
-                db_lock.store.remove(&(code as u8));
-            }            
         }
     }
 }
