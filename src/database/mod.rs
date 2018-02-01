@@ -1,7 +1,7 @@
 use spin::Mutex;
 use alloc::{BTreeMap, Vec, String};
 use database::transaction::{Transaction, Value};
-use drivers::vga::{clear_screen};
+use drivers::vga::{SCREEN_WRITER};
 
 pub mod transaction;
 
@@ -47,7 +47,7 @@ impl Database {
         txn.process();
       }
     }
-    //clear_screen();
+    SCREEN_WRITER.lock().clear();
     for (key, val) in &self.store {
         println!("{:?}: {:?}", key, val);
     }

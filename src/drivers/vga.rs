@@ -140,6 +140,19 @@ impl ScreenWriter {
             self.buffer().chars[row][col].write(blank);
         }
     }
+
+    pub fn clear(&mut self) {
+        let blank = ScreenCharacter {
+            ascii_character: b' ',
+            color_code: self.color_code,
+        };
+        for row in 0..VGA_HEIGHT {
+            for col in 0..VGA_WIDTH {
+                self.buffer().chars[row][col].write(blank);
+            }
+        }
+    }
+
 }
 
 // We implement a fmt:Write for the ScreenWriter to support rust macros
