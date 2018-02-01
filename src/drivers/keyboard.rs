@@ -220,8 +220,10 @@ impl Keyboard {
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
-                        let code_str = format!("{:?}", code);
-                        let mut change = Change::from_eav("#keyboard/event/keydown", "key", Value::from_str(&code_str));
+                        let entity = "#keyboard/event/keydown";
+                        let attribute = "key";
+                        let value = Value::from_string(format!("{:?}", code));
+                        let mut change = Change::from_eav(entity, attribute, value);
                         let mut transaction = Transaction::new();
                         if state == KeyState::Down {
                             change.kind = ChangeType::Add;
@@ -231,6 +233,9 @@ impl Keyboard {
                             transaction.removes.push(change);
                         }
                         database::database.lock().insert_transaction(transaction);
+                        if code == KeyCode::Escape && state == KeyState::Down {
+                            SCREEN_WRITER.lock().clear();
+                        }
                     }
                 },
                 None => {
