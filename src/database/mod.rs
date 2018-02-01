@@ -1,18 +1,21 @@
 use spin::Mutex;
-use alloc::BTreeMap;
-
+use alloc::{BTreeMap, Vec, String};
+use database::transaction::{Transaction, Value};
+use drivers::vga::{clear_screen};
 
 pub mod transaction;
 
 
 pub struct Database {
-  pub store: BTreeMap<u8, u8>,
+  transactions: Vec<Transaction>,
+  pub store: BTreeMap<String, Value>,
 }
 
 impl Database {
 
   pub fn new() -> Database {
     Database {
+      transactions: Vec::new(),
       store: BTreeMap::new(),
     }
   }
@@ -21,6 +24,37 @@ impl Database {
     
   }
 
+  pub fn insert_transaction(&mut self, transaction: Transaction) {
+    self.transactions.push(transaction);
+    self.process_transactions();
+  }
+
+  fn process_transactions(&mut self) {
+
+    for txn in self.transactions.iter_mut() {
+      if !txn.is_complete() {
+        // Handle the adds
+        for add in txn.adds.iter() {
+          let id = format!("{:?}|{:?}|{:?}", add.entity, add.attribute, add.value);
+          let value = add.value.clone();
+          self.store.insert(String::from(id), value);
+        }
+        // Handle the removes
+        for remove in txn.removes.iter() {
+          let id = format!("{:?}|{:?}|{:?}", remove.entity, remove.attribute, remove.value);
+          self.store.remove(&String::from(id));
+        }
+        txn.process();
+      }
+    }
+    //clear_screen();
+    for (key, val) in &self.store {
+        println!("{:?}: {:?}", key, val);
+    }
+
+
+    
+  }
 }
 
 lazy_static! {
