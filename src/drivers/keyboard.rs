@@ -220,19 +220,24 @@ impl Keyboard {
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
-                        let entity = "#keyboard/event/keydown";
+                        let tag = Value::from_str("#keyboard/event/keydown");
+                        let entity = event::update_time(); 
                         let attribute = "key";
                         let value = Value::from_string(format!("{:?}", code));
-                        let mut change = Change::from_eav(entity, attribute, value);
+                        let mut key_change = Change::from_eav(entity, attribute, value);
+                        let mut tag_change = Change::from_eav(entity, "tag", tag);
                         let mut transaction = Transaction::new();
                         if state == KeyState::Down {
-                            change.kind = ChangeType::Add;
-                            transaction.adds.push(change);
+                            key_change.kind = ChangeType::Add;
+                            transaction.adds.push(key_change);
+                            transaction.adds.push(tag_change);
                         } else {
-                            change.kind = ChangeType::Remove;
-                            transaction.removes.push(change);
+                            key_change.kind = ChangeType::Remove;
+                            tag_change.kind = ChangeType::Remove;
+                            transaction.removes.push(key_change);
+                            transaction.removes.push(tag_change);
                         }
-                        database::database.lock().insert_transaction(transaction);
+                        database::database.lock().register_transaction(transaction);
                         if code == KeyCode::Escape && state == KeyState::Down {
                             SCREEN_WRITER.lock().clear();
                         }

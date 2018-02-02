@@ -48,15 +48,16 @@ impl fmt::Debug for Value {
 
 // ## Changes
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ChangeType {
   Add,
   Remove,
 }
 
+#[derive(Clone)]
 pub struct Change {
   pub kind: ChangeType,
-  pub entity: String,
+  pub entity: u64,
   pub attribute: String,
   pub value: Value,
 }
@@ -65,20 +66,19 @@ impl Change {
   pub fn new() -> Change {
     Change {
       kind: ChangeType::Add,
-      entity: String::new(),
+      entity: 0,
       attribute: String::new(),
       value: Value::Null,
     }
   }
 
-  pub fn from_eav(entity: &str, attribute: &str, value: Value) -> Change {
-    let e = String::from(entity);
+  pub fn from_eav(entity: u64, attribute: &str, value: Value) -> Change {  
     let a = String::from(attribute);
     Change {
       kind: ChangeType::Add,
-      entity: e,
+      entity,
       attribute: a,
-      value: value,
+      value,
     }
   }
 
@@ -109,6 +109,8 @@ impl fmt::Debug for Change {
 pub struct Transaction {
   pub timestamp: u64,
   pub complete: u64,
+  pub epoch: u64,
+  pub round: u64,
   pub adds: Vec<Change>,
   pub removes: Vec<Change>,
 }
@@ -118,6 +120,8 @@ impl Transaction {
     Transaction {
       timestamp: event::update_time(),
       complete: 0,
+      epoch: 0,
+      round: 0,
       adds: Vec::new(),
       removes: Vec::new(),
     }
