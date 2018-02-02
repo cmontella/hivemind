@@ -38,9 +38,9 @@ impl fmt::Debug for Value {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
       match self {
-        &Value::Number(ref x) => write!(f, "{:?}", x),
-        &Value::String(ref x) => write!(f, "{:?}", x),
-        &Value::Bool(ref x) => write!(f, "{:?}", x),
+        &Value::Number(ref x) => write!(f, "{}", x),
+        &Value::String(ref x) => write!(f, "{}", x),
+        &Value::Bool(ref x) => write!(f, "{}", x),
         &Value::Null => write!(f, "Null"),
       }
     }
@@ -57,7 +57,7 @@ pub enum ChangeType {
 #[derive(Clone)]
 pub struct Change {
   pub kind: ChangeType,
-  pub entity: u64,
+  pub entity: String,
   pub attribute: String,
   pub value: Value,
 }
@@ -66,17 +66,18 @@ impl Change {
   pub fn new() -> Change {
     Change {
       kind: ChangeType::Add,
-      entity: 0,
+      entity: String::new(),
       attribute: String::new(),
       value: Value::Null,
     }
   }
 
-  pub fn from_eav(entity: u64, attribute: &str, value: Value) -> Change {  
+  pub fn from_eav(entity: &str, attribute: &str, value: Value) -> Change {  
+    let e = String::from(entity);
     let a = String::from(attribute);
     Change {
       kind: ChangeType::Add,
-      entity,
+      entity: e,
       attribute: a,
       value,
     }

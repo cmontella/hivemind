@@ -221,11 +221,11 @@ impl Keyboard {
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
                         let tag = Value::from_str("#keyboard/event/keydown");
-                        let entity = event::update_time(); 
+                        let entity = format!("{:?}|{:?}", tag, code); 
                         let attribute = "key";
                         let value = Value::from_string(format!("{:?}", code));
-                        let mut key_change = Change::from_eav(entity, attribute, value);
-                        let mut tag_change = Change::from_eav(entity, "tag", tag);
+                        let mut key_change = Change::from_eav(&entity, attribute, value);
+                        let mut tag_change = Change::from_eav(&entity, "tag", tag);
                         let mut transaction = Transaction::new();
                         if state == KeyState::Down {
                             key_change.kind = ChangeType::Add;
