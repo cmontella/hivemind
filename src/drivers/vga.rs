@@ -111,6 +111,30 @@ impl ScreenWriter {
         self.write_byte(character as u8, color_code, row, col);
     }
 
+    pub fn write_str(&mut self, string: &str) {
+        for byte in string.bytes() {
+            let color_code = self.color_code;
+            let row = self.y;
+            let col = self.x;
+            self.write_byte(byte, color_code, row, col);
+        };
+    }
+
+    pub fn write_str_at(&mut self, string: &str, x: usize, y: usize) {
+        let before_x = self.x;
+        let before_y = self.y;
+        self.x = x;
+        self.y = y;
+        for byte in string.bytes() {
+            let color_code = self.color_code;
+            let row = self.y;
+            let col = self.x;
+            self.write_byte(byte, color_code, row, col);
+        };
+        self.x = before_x;
+        self.y = before_y;
+    }
+
     // Converts raw pointer to a safe buffer reference
     fn buffer(&mut self) -> &mut Buffer {
         unsafe{ self.buffer.as_mut() }
