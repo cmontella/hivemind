@@ -1,12 +1,15 @@
 use spin::Mutex;
 use alloc::{BTreeMap, Vec, String};
 use alloc::arc::Arc;
-use database::transaction::{Transaction, Value, Change, ChangeType};
+use database::transaction::{Transaction, Change, ChangeType};
 use drivers::vga::{SCREEN_WRITER};
 use x86_64::instructions::rdtsc;
 use interrupts::event;
+use core::fmt;
 
 pub mod transaction;
+
+// ## Entities
 
 #[derive(Debug)]
 pub struct Entity {
@@ -22,6 +25,8 @@ impl Entity {
     }
   }
 }
+
+// ## Attributes
 
 #[derive(Debug)]
 pub struct Attribute {
@@ -40,6 +45,45 @@ impl Attribute {
   }
 }
 
+// ## Values
+
+#[derive(Clone)]
+pub enum Value {
+  Null,
+  Number(u64),
+  Bool(bool),
+  String(String),
+}
+
+impl Value {
+
+  pub fn from_string(string: String) -> Value {
+    Value::String(string)
+  }
+
+  pub fn from_str(string: &str) -> Value {
+    Value::String(String::from(string))
+  }
+
+  pub fn from_int(int: u64) -> Value {
+    Value::Number(int)
+  }
+
+}
+
+impl fmt::Debug for Value {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+      match self {
+        &Value::Number(ref x) => write!(f, "{}", x),
+        &Value::String(ref x) => write!(f, "{}", x),
+        &Value::Bool(ref x) => write!(f, "{}", x),
+        &Value::Null => write!(f, "Null"),
+      }
+    }
+}
+
+// ## Interner
 
 #[derive(Debug)]
 pub struct Interner {
@@ -58,6 +102,8 @@ impl Interner {
     self.store.push(change.clone());
   }
 }
+
+// ## Database
 
 #[derive(Debug)]
 pub struct Database {

@@ -9,7 +9,8 @@ use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use database;
 use interrupts::event;
-use database::transaction::{Transaction, Change, Value, ChangeType};
+use database::transaction::{Transaction, Change, ChangeType};
+use database::Value;
 use alloc::String;
 
 // #### Code Page 437

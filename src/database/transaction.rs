@@ -2,49 +2,12 @@
 
 use alloc::{String, Vec};
 use interrupts::event;
+use database::Value;
 use core::fmt;
 
 /*
 Transactions are units of atomic updates to the DB.
 */
-
-
-// ## Values
-#[derive(Clone)]
-pub enum Value {
-  Null,
-  Number(u64),
-  Bool(bool),
-  String(String),
-}
-
-impl Value {
-
-  pub fn from_string(string: String) -> Value {
-    Value::String(string)
-  }
-
-  pub fn from_str(string: &str) -> Value {
-    Value::String(String::from(string))
-  }
-
-  pub fn from_int(int: u64) -> Value {
-    Value::Number(int)
-  }
-
-}
-
-impl fmt::Debug for Value {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-      match self {
-        &Value::Number(ref x) => write!(f, "{}", x),
-        &Value::String(ref x) => write!(f, "{}", x),
-        &Value::Bool(ref x) => write!(f, "{}", x),
-        &Value::Null => write!(f, "Null"),
-      }
-    }
-}
 
 // ## Changes
 
