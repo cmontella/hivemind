@@ -27,5 +27,5 @@ test:cargo:
   - apt-get update -yqq
   - apt-get install gcc -yqq
   - cargo install xargo
-  - cargo build
+  - c	@RUST_TARGET_PATH=$(pwd) xargo build --target x86_64-hivemind
   # cargo test --all --verbose
