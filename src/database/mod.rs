@@ -114,6 +114,7 @@ pub struct Database {
   attribute_index: BTreeMap<String, Attribute>,
   store: Interner,
   scanned: usize,
+  txn_pointer: usize,
 }
 
 impl Database {
@@ -127,6 +128,7 @@ impl Database {
       attribute_index: BTreeMap::new(),
       store: Interner::new(),
       scanned: 0,
+      txn_pointer: usize,
     }
   }
 
@@ -138,11 +140,12 @@ impl Database {
     self.transactions.push(transaction);
     self.process_transactions();
     self.update_indices();
+    self.txn_pointer = self.transactions.len();
     self.epoch = self.epoch + 1;
   }
 
   fn process_transactions(&mut self) {   
-    for txn in self.transactions.iter_mut() {
+    for txn in self.transactions.iter_mut().skip(self.txn_pointer) {
       if !txn.is_complete() {
         // Handle the adds
         for add in txn.adds.iter() {
