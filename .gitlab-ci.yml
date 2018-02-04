@@ -20,6 +20,8 @@ image: "rust:latest"
 # Use cargo to test the project
 test:cargo:
   script:
-  - rustup show
+  - rustup default nightly
+  - rustup component add rust-src
+  - cargo install xargo
   - rustc --version && cargo --version      # Print version info for debugging
   - cargo test --all --verbose
