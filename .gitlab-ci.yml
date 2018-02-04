@@ -22,6 +22,9 @@ test:cargo:
   script:
   - rustup default nightly
   - rustup component add rust-src
+  - apt-get update -yqq
+  - apt-get install gcc -yqq
   - cargo install xargo
-  - rustc --version && cargo --version      # Print version info for debugging
-  - cargo test --all --verbose
+  - cargo build
+  # rustc --version && cargo --version      # Print version info for debugging
+  # cargo test --all --verbose
