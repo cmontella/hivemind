@@ -105,7 +105,6 @@ impl Interner {
 
 // ## Database
 
-#[derive(Debug)]
 pub struct Database {
   epoch: u64,
   round: u64,
@@ -128,7 +127,7 @@ impl Database {
       attribute_index: BTreeMap::new(),
       store: Interner::new(),
       scanned: 0,
-      txn_pointer: usize,
+      txn_pointer: 0,
     }
   }
 
