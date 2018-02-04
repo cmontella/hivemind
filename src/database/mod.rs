@@ -180,6 +180,14 @@ impl Database {
 
 }
  
+impl fmt::Debug for Database {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Database:\n--------------------\nEpoch: {:?}\nTransactions: {:?}\nChanges: {:?}\nScanned: {:?}\n--------------------\n", self.epoch, self.transactions.len(), self.store.store.len(), self.scanned)
+    }
+}
+
+
 /*
     let entity: &mut Entity = match self.entity_index.get_mut(&change.entity) {
       None => {
