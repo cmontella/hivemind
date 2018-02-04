@@ -21,10 +21,11 @@ image: "rust:latest"
 test:cargo:
   script:
   - rustup default nightly
+  - rustup show
+  - rustc --version && cargo --version
   - rustup component add rust-src
   - apt-get update -yqq
   - apt-get install gcc -yqq
   - cargo install xargo
   - cargo build
-  # rustc --version && cargo --version      # Print version info for debugging
   # cargo test --all --verbose
