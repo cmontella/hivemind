@@ -28,4 +28,4 @@ test:cargo:
   - apt-get install gcc grub-common make nasm -yqq
   - cargo install xargo
   - make iso
-  # cargo test --all --verbose
+  - cargo test --all --verbose

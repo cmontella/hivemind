@@ -1,4 +1,4 @@
-// HiveMind
+// # HiveMind
 
 #![feature(lang_items)]
 #![feature(unique)]
@@ -17,6 +17,7 @@
 #![feature(asm)]
 #![feature(exclusive_range_pattern)]
 
+// ## Prelude
 
 extern crate rlibc;
 extern crate volatile;
@@ -49,6 +50,16 @@ use x86_64::instructions;
 use alloc::BTreeMap;
 use arch::x86_64::cpu;
 
+// ## Configurew Heap
+
+pub const HEAP_START: usize = 0o_000_001_000_000_0000;
+pub const HEAP_SIZE: usize = 1000 * 1024; // 1000 KiB
+#[cfg(not(test))]
+#[global_allocator]
+static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+// ## Hivemind Entry
+
 #[no_mangle]
 pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     // Start by clearing the screen
@@ -76,6 +87,7 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     interrupts::init(&mut memory_controller);
 
     // Initialize the heap allocator
+    #[cfg(not(test))]
     unsafe {
         HEAP_ALLOCATOR.lock().init(HEAP_START, HEAP_START + HEAP_SIZE);
     }
@@ -112,20 +124,20 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     loop { }
 }
 
-#[lang = "eh_personality"] extern fn eh_personality() {}
+#[cfg(not(test))]
+#[lang = "eh_personality"] 
+extern fn eh_personality() {
+    ()
+}
+#[cfg(not(test))]
 #[lang = "panic_fmt"] 
-#[no_mangle] 
+#[no_mangle]
 pub extern fn panic_fmt(fmt: core::fmt::Arguments, file: &'static str, line: u32) -> ! {
     println!("\n\nPanic in {} at line {}:", file, line);
     println!("     {}", fmt);
     loop{}
 }
 
-pub const HEAP_START: usize = 0o_000_001_000_000_0000;
-pub const HEAP_SIZE: usize = 1000 * 1024; // 1000 KiB
-
-#[global_allocator]
-static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 fn print_header(header: &str) {
     println!("--------------------------------------------------------------------------------");
