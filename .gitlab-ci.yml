@@ -25,7 +25,7 @@ test:cargo:
   - rustc --version && cargo --version
   - rustup component add rust-src
   - apt-get update -yqq
-  - apt-get install gcc -yqq
+  - apt-get install gcc grub-common make -yqq
   - cargo install xargo
-  - RUST_TARGET_PATH=$(pwd) xargo build --target x86_64-hivemind
+  - make iso
   # cargo test --all --verbose
