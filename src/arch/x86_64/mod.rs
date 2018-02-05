@@ -9,3 +9,4 @@ chipsets.
 
 pub mod pic;
 pub mod rtc;
+pub mod cpu;
