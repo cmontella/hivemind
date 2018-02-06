@@ -35,13 +35,13 @@ extern crate once;
 extern crate lazy_static;
 extern crate bit_field;
 extern crate raw_cpuid;
+extern crate mech;
 
 #[macro_use]
 mod macros;
 mod memory;
 mod interrupts;
 mod drivers;
-mod database;
 mod arch;
 
 use memory::FrameAllocator;
@@ -49,6 +49,8 @@ use linked_list_allocator::LockedHeap;
 use x86_64::instructions;
 use alloc::BTreeMap;
 use arch::x86_64::cpu;
+use mech::database::Database;
+use spin::Mutex;
 
 // ## Configurew Heap
 
@@ -57,6 +59,10 @@ pub const HEAP_SIZE: usize = 1000 * 1024; // 1000 KiB
 #[cfg(not(test))]
 #[global_allocator]
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+lazy_static! {
+  pub static ref MechDB: Mutex<Database> = Mutex::new(Database::new());
+}
 
 // ## Hivemind Entry
 
@@ -118,7 +124,7 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     }
 
     {    
-        database::database.lock().init();
+        MechDB.lock().init();
     }
 
     loop { }

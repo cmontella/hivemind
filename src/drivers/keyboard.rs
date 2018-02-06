@@ -7,11 +7,10 @@ use x86_64::instructions::port::{inb, outb};
 use spin::Mutex;
 use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
-use database;
 use interrupts::event;
-use database::transaction::{Transaction, Change, ChangeType};
-use database::Value;
+use mech::database::{Transaction, Change, ChangeType, Value};
 use alloc::String;
+use ::MechDB;
 
 // #### Code Page 437
 
@@ -238,7 +237,8 @@ impl Keyboard {
                             transaction.removes.push(key_change);
                             transaction.removes.push(tag_change);
                         }
-                        database::database.lock().register_transaction(transaction);
+                        let mut txns = vec![transaction];
+                        MechDB.lock().register_transactions(&mut txns);
                         if code == KeyCode::Escape && state == KeyState::Down {
                             SCREEN_WRITER.lock().clear();
                         }
