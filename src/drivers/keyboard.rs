@@ -8,7 +8,8 @@ use spin::Mutex;
 use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use interrupts::event;
-use mech::database::{Transaction, Change, ChangeType, Value};
+use mech::runtime::{Transaction, Change, ChangeType};
+use mech::eav::{Value};
 use alloc::String;
 use ::MechDB;
 
@@ -220,12 +221,13 @@ impl Keyboard {
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
+                        /*
                         let tag = Value::from_str("#keyboard/event/keydown");
                         let entity = format!("{:?}|{:?}", tag, code); 
                         let attribute = "key";
                         let value = Value::from_string(format!("{:?}", code));
-                        let mut key_change = Change::from_eav(&entity, attribute, value);
-                        let mut tag_change = Change::from_eav(&entity, "tag", tag);
+                        let mut key_change = Change::from_eav(&entity, attribute, value, ChangeType::Add);
+                        let mut tag_change = Change::from_eav(&entity, "tag", tag, ChangeType::Add);
                         let mut transaction = Transaction::new();
                         if state == KeyState::Down {
                             key_change.kind = ChangeType::Add;
@@ -239,6 +241,7 @@ impl Keyboard {
                         }
                         let mut txns = vec![transaction];
                         MechDB.lock().register_transactions(&mut txns);
+                        */
                         if code == KeyCode::Escape && state == KeyState::Down {
                             SCREEN_WRITER.lock().clear();
                         }

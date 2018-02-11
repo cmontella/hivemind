@@ -49,7 +49,7 @@ use linked_list_allocator::LockedHeap;
 use x86_64::instructions;
 use alloc::BTreeMap;
 use arch::x86_64::cpu;
-use mech::database::Database;
+use mech::runtime::Database;
 use spin::Mutex;
 
 // ## Configurew Heap
