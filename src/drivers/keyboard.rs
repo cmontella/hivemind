@@ -9,7 +9,7 @@ use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use interrupts::event;
 use mech::runtime::{Transaction, Change, ChangeType};
-use mech::eav::{Value};
+use mech::eav::{Entity, Value};
 use alloc::String;
 use ::MechDB;
 
@@ -215,33 +215,28 @@ impl Keyboard {
             let full_code = scan_code as u32 | self.current_byte;
             let key_code = scan_to_key(full_code);
 
+            
+
             match key_code {
                 Some((code, state)) => {
                     self.current_byte = 0;
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
-                        /*
-                        let tag = Value::from_str("#keyboard/event/keydown");
-                        let entity = format!("{:?}|{:?}", tag, code); 
-                        let attribute = "key";
-                        let value = Value::from_string(format!("{:?}", code));
-                        let mut key_change = Change::from_eav(&entity, attribute, value, ChangeType::Add);
-                        let mut tag_change = Change::from_eav(&entity, "tag", tag, ChangeType::Add);
-                        let mut transaction = Transaction::new();
+                        let raw = vec![("tag", Value::from_str("#keyboard/event/keypress")),
+                                       ("key", Value::from_string(format!("{:?}", code)))];
+                        
+                        let key_event = Entity::from_raw(raw);
+                        let txn;
                         if state == KeyState::Down {
-                            key_change.kind = ChangeType::Add;
-                            transaction.adds.push(key_change);
-                            transaction.adds.push(tag_change);
+                            let changes = key_event.make_changeset(ChangeType::Add);
+                            txn = Transaction::from_changeset(changes);
                         } else {
-                            key_change.kind = ChangeType::Remove;
-                            tag_change.kind = ChangeType::Remove;
-                            transaction.removes.push(key_change);
-                            transaction.removes.push(tag_change);
+                            let changes = key_event.make_changeset(ChangeType::Remove);
+                            txn = Transaction::from_changeset(changes);
                         }
-                        let mut txns = vec![transaction];
-                        MechDB.lock().register_transactions(&mut txns);
-                        */
+                        MechDB.lock().register_transactions(&mut vec![txn]);
+                        
                         if code == KeyCode::Escape && state == KeyState::Down {
                             SCREEN_WRITER.lock().clear();
                         }
