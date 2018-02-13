@@ -8,7 +8,7 @@ use spin::Mutex;
 use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use interrupts::event;
-use mech::runtime::{Transaction, Change, ChangeType};
+use mech::database::{Transaction, Change, ChangeType};
 use mech::eav::{Entity, Value};
 use alloc::String;
 use ::MechDB;
