@@ -214,18 +214,14 @@ impl Keyboard {
             let scan_code = inb(0x60);
             let full_code = scan_code as u32 | self.current_byte;
             let key_code = scan_to_key(full_code);
-
-            
-
             match key_code {
                 Some((code, state)) => {
                     self.current_byte = 0;
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
-                        let raw = vec![("tag", Value::from_str("#keyboard/event/keypress")),
+                        let raw = vec![("tag", Value::from_str("#keyboard/event/keydown")),
                                        ("key", Value::from_string(format!("{:?}", code)))];
-                        
                         let key_event = Entity::from_raw(raw);
                         let txn;
                         if state == KeyState::Down {
@@ -236,7 +232,6 @@ impl Keyboard {
                             txn = Transaction::from_changeset(changes);
                         }
                         MechDB.lock().register_transactions(&mut vec![txn]);
-                        
                         if code == KeyCode::Escape && state == KeyState::Down {
                             SCREEN_WRITER.lock().clear();
                         }
