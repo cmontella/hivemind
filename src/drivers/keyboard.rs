@@ -13,25 +13,6 @@ use mech::eav::{Entity, Value};
 use alloc::String;
 use ::MechDB;
 
-// #### Code Page 437
-
-#[repr(u8)]
-pub enum CharacterCode {
-    Null, LightSmile, DarkSmile, Heart, Diamond, Club, Spade, Bullet, BulletBackground, Circle, CircleBackground, Mars, Venus, EighthNote, SixteenthNote, Sun,
-    RightTriangle, LeftTriangle, DoubleArrowVertical, DoubleExclamation, Pilcrow, Section, Bar, DoubleArrowBottom, UpArrow, DownArrow, RightArrow, LeftArrow, RightAngle, DoubleArrowHorz, UpTriangle, DownTriangle,
-    Space, Exclamation, Quote, Hash, Dollar, Percent, Ampersand, Apostrophe, LeftParenthesis, RightParenthesis, Asterisk, Plus, Comma, Minus, FullStop, Slash,
-    Zero, One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Colon, Semicolon, LeftChevron, Equal, RightChevron,  Question,
-    At, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, LeftBracket, BackSlash, RightBracket, Caret, Underscore,
-    Grave, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z, LeftBrace, Pipe, RightBrace, Tilde, House,
-    C_Cedilla, u_Umlaut, e_Acute,  a_Circumflex, a_Umlaut, a_Grave, a_Volle, c_Cedilla, e_Circumflex, e_Umlaut, e_Grave, i_Umlaut, i_Circumflex, i_Grave, A_Umlaut, A_Volle, 
-    E_Acute, ae, AE, o_Circumflex, o_Umlaut, o_Grave, u_Circumflex, u_Grave, y_Umlaut, O_Umlaut, U_Umlaut, Cents, PoundSterling, Yen, Pesta, ScriptF,
-    a_Acute, i_Acute, o_acute, u_acute, n_Tilde, N_Tilde, a_Ordinal, o_Ordinal, InvertedQuestion, LeftNegation, RightNegation, Half, Quarter, InvertedExclamation, LeftAngleQuotes, RightAngleQuotes, 
-    LightBlock, MediumBlock, BoxDrawing179, BoxDrawing180, BoxDrawing181, BoxDrawing182, BoxDrawing183, BoxDrawing184, BoxDrawing185, BoxDrawing186, BoxDrawing187, BoxDrawing188, BoxDrawing189, BoxDrawing190, BoxDrawing191,
-    BoxDrawing192, BoxDrawing193, BoxDrawing194, BoxDrawing195, BoxDrawing196, BoxDrawing197, BoxDrawing198, BoxDrawing199, BoxDrawing200, BoxDrawing201, BoxDrawing202, BoxDrawing203, BoxDrawing204, BoxDrawing205, BoxDrawing206, BoxDrawing207,
-    BoxDrawing208, BoxDrawing209, BoxDrawing210, BoxDrawing211, BoxDrawing212, BoxDrawing213, BoxDrawing214, BoxDrawing215, BoxDrawing216, BoxDrawing217, BoxDrawing218, SolidBlock, BoxDrawing220, BoxDrawing221, BoxDrawing222, BoxDrawing223,
-    alpha, beta, Gamma, pi, Sigma, sigma, mu, tau, Phi, Theta, omega, delta, Lemniscate, phi, epsilon, Intersection, TripleBar, PlusMinus, GreaterThanEqual, LessThanEqual, IntegrateTop, IntegrateBottom, Divide, Approximate, Degree, Bullet2, Interrupt, SquareRoot, NthPower, Squared, Square,
-}
-
 // #### Keyboard Key Mappings
 
 #[derive(Debug, Clone, Copy, PartialEq)]
