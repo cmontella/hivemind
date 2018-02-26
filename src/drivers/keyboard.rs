@@ -222,6 +222,7 @@ impl Keyboard {
                     self.current_byte = full_code << 8;
                 },
             };
+            // Tell the keyboard we've read a byte
             outb(0x20, 0x20);
         }
     }
