@@ -9,7 +9,7 @@ use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use interrupts::event;
 use mech::database::{Transaction, Change, ChangeType};
-use mech::eav::{Entity, Value};
+use mech::table::{Entity, Value};
 use alloc::String;
 use ::MechDB;
 
