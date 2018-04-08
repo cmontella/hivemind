@@ -9,7 +9,7 @@ use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use interrupts::event;
 use mech::database::{Transaction, Change, ChangeType};
-use mech::table::{Entity, Value};
+use mech::table::{Table, Value};
 use alloc::String;
 use ::MechDB;
 
@@ -201,6 +201,7 @@ impl Keyboard {
                     let (current_code, current_state) = self.key_map[code as usize];
                     if state != current_state {
                         self.key_map[code as usize] = (code, state);   
+                        /*
                         let raw = vec![("tag", Value::from_str("#keyboard/event/keydown")),
                                        ("key", Value::from_string(format!("{:?}", code)))];
                         let key_event = Entity::from_raw(raw);
@@ -213,6 +214,7 @@ impl Keyboard {
                             txn = Transaction::from_changeset(changes);
                         }
                         MechDB.lock().register_transactions(&mut vec![txn]);
+                        */
                         if code == KeyCode::Escape && state == KeyState::Down {
                             SCREEN_WRITER.lock().clear();
                         }
