@@ -123,10 +123,6 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
         instructions::interrupts::enable();
     }
 
-    {    
-        MechDB.lock().init();
-    }
-
     loop { }
 }
 
