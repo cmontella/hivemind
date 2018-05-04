@@ -61,7 +61,7 @@ pub const HEAP_SIZE: usize = 1000 * 1024; // 1000 KiB
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 lazy_static! {
-  pub static ref MechDB: Mutex<Database> = Mutex::new(Database::new(100, 100, 100));
+  pub static ref MechDB: Mutex<Database> = Mutex::new(Database::new(1000, 10));
 }
 
 // ## Hivemind Entry
