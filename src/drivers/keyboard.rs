@@ -8,10 +8,9 @@ use spin::Mutex;
 use alloc;
 use drivers::vga::{SCREEN_WRITER, ColorCode, Color};
 use interrupts::event;
-use mech::database::{Transaction, Change};
-use mech::table::{Table, Value};
+use mech::{Transaction, Change, Table, Value};
 use alloc::String;
-use ::MechDB;
+use ::MechCore;
 
 // #### Keyboard Key Mappings
 

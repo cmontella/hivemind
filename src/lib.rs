@@ -49,7 +49,7 @@ use linked_list_allocator::LockedHeap;
 use x86_64::instructions;
 use alloc::BTreeMap;
 use arch::x86_64::cpu;
-use mech::database::Database;
+use mech::Core;
 use spin::Mutex;
 
 // ## Configurew Heap
@@ -61,7 +61,7 @@ pub const HEAP_SIZE: usize = 1000 * 1024; // 1000 KiB
 static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 lazy_static! {
-  pub static ref MechDB: Mutex<Database> = Mutex::new(Database::new(1000, 10));
+  pub static ref MechCore: Mutex<Database> = Mutex::new(Core::new(1000, 10));
 }
 
 // ## Hivemind Entry
