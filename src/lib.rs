@@ -71,7 +71,7 @@ pub extern "C" fn hivemind_entry(multiboot_info_address: usize) {
     // Start by clearing the screen
     drivers::vga::clear_screen();
 
-    println!("Booting HiveMind                                                   v0.1.0 alpha");
+    println!("Booting HiveMind                                                   v0.0.1 alpha");
     
     // Print CPU info
     print_header("Detecting CPU");
