@@ -1,7 +1,10 @@
 [package]
 name = "hivemind"
-version = "0.1.0"
-authors = ["Corey Montella <cmontella@live.com>"]
+version = "0.0.1"
+authors = ["cmontella@live.com"]
+
+[dependencies]
+bootloader = "0.6.0"
 
 [profile.dev]
 panic = "abort"
@@ -9,4 +12,5 @@ panic = "abort"
 [profile.release]
 panic = "abort"
 
-[dependencies]
+[package.metadata.bootimage]
+default-target = "x86_64-hivemind.json"
