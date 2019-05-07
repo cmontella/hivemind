@@ -1,0 +1,12 @@
+[package]
+name = "hivemind"
+version = "0.1.0"
+authors = ["Corey Montella <cmontella@live.com>"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
+
+[dependencies]
