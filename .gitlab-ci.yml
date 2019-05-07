@@ -2,12 +2,11 @@ image: "rust:latest"
 
 test:cargo:
   script:
-  - rustup default nightly-2018-06-24
+  - rustup default nightly-2019-05-07
   - rustup show
   - rustc --version && cargo --version
   - rustup component add rust-src
-  - apt-get update -yqq
-  - apt-get install gcc grub-common make nasm -yqq
-  - cargo install xargo
-  - make iso
-  - cargo test --all
+  - rustup component add llvm-tools-preview
+  - cargo install cargo-xbuild
+  - cargo install bootimage --version "^0.7.3"
+  - cargo bootimage
