@@ -5,6 +5,7 @@ authors = ["cmontella@live.com"]
 
 [dependencies]
 bootloader = "0.6.0"
+mech-core = {git = "https://gitlab.com/mech-lang/core", features = ["no-std"]}
 
 [profile.dev]
 panic = "abort"
