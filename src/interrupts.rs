@@ -1,4 +1,6 @@
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64::structures::idt::{PageFaultErrorCode, InterruptDescriptorTable, InterruptStackFrame};
+use x86_64::instructions::port::Port;
+use x86_64::registers::control::Cr2;
 use crate::println;
 use lazy_static::lazy_static;
 use crate::gdt;
@@ -8,7 +10,7 @@ use spin;
 use crate::{serial_print, serial_println};
 use crate::print;
 use crate::hlt_loop;
-use x86_64::instructions::port::Port;
+
 use pc_keyboard::{Keyboard, ScancodeSet1, DecodedKey, layouts};
 use spin::Mutex;
 
@@ -16,6 +18,9 @@ pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
 
 pub static PICS: spin::Mutex<ChainedPics> = spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
+
+
+// ## Interrupt Handlers
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut InterruptStackFrame) {
     println!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
@@ -26,9 +31,7 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: &mut InterruptStackF
     hlt_loop();
 }
 
-extern "x86-interrupt" fn keyboard_interrupt_handler(
-    _stack_frame: &mut InterruptStackFrame)
-{
+extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
     lazy_static! {
         static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
             Mutex::new(Keyboard::new(layouts::Us104Key, ScancodeSet1));
@@ -60,6 +63,16 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptSt
     }
 } 
 
+extern "x86-interrupt" fn page_fault_handler(stack_frame: &mut InterruptStackFrame, _error_code: PageFaultErrorCode) {
+
+    println!("EXCEPTION: PAGE FAULT");
+    println!("Accessed Address: {:?}", Cr2::read());
+    println!("{:#?}", stack_frame);
+    hlt_loop();
+}
+
+// ## Interrupt Descriptor Table
+
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
         let mut idt = InterruptDescriptorTable::new();
@@ -70,6 +83,7 @@ lazy_static! {
         }
         idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
         idt[InterruptIndex::Keyboard.as_usize()].set_handler_fn(keyboard_interrupt_handler);
+        idt.page_fault.set_handler_fn(page_fault_handler);
         idt
     };
 }
@@ -92,7 +106,6 @@ impl InterruptIndex {
         usize::from(self.as_u8())
     }
 }
-
 
 pub fn init_idt() {
     IDT.load();

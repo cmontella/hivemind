@@ -4,7 +4,7 @@ version = "0.0.1"
 authors = ["cmontella@live.com"]
 
 [dependencies]
-bootloader = "0.6.0"
+bootloader = { version = "0.6.0", features = ["map_physical_memory"]}
 volatile = "0.2.3"
 mech-core = {git = "https://gitlab.com/mech-lang/core", features = ["no-std"]}
 spin = "0.4.9"
