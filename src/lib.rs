@@ -10,6 +10,7 @@ extern crate spin;
 extern crate volatile;
 extern crate x86_64;
 extern crate uart_16550;
+extern crate pic8259_simple;
 
 use core::panic::PanicInfo;
 use core::fmt::Write;
@@ -67,4 +68,6 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
 pub fn init() {
     gdt::init();
     interrupts::init_idt();
+    unsafe { interrupts::PICS.lock().initialize() };
+    x86_64::instructions::interrupts::enable();
 }
