@@ -2,6 +2,8 @@ use volatile::Volatile;
 use core::fmt;
 use lazy_static::lazy_static;
 use spin::Mutex;
+use core::fmt::Write;
+use x86_64::instructions::interrupts; 
 
 #[cfg(test)]
 use crate::{serial_print, serial_println};
@@ -152,8 +154,10 @@ macro_rules! println {
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
-    use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
+     interrupts::without_interrupts(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    });
 }
 
 // Tests
