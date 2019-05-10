@@ -10,6 +10,8 @@ use spin;
 use crate::{serial_print, serial_println};
 use crate::print;
 use crate::hlt_loop;
+use crate::Mech;
+use mech_core::Transaction;
 
 use pc_keyboard::{Keyboard, ScancodeSet1, DecodedKey, layouts};
 use spin::Mutex;
@@ -50,6 +52,8 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut Interrup
         }
     }
 
+    Mech.lock().process_transaction(&Transaction::new());
+    println!("HASDASDA");
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());

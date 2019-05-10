@@ -17,6 +17,7 @@ extern crate pc_keyboard;
 extern crate bootloader;
 extern crate alloc;
 extern crate linked_list_allocator;
+extern crate mech_core;
 
 use core::panic::PanicInfo;
 use core::fmt::Write;
@@ -24,13 +25,15 @@ use x86_64::instructions::port::Port;
 #[cfg(test)]
 use bootloader::{entry_point, BootInfo};
 use linked_list_allocator::LockedHeap;
+use mech_core::Core;
+use lazy_static::lazy_static;
+use spin::Mutex;
 
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
 pub mod gdt;
 pub mod memory;
-pub mod heap_allocator;
 
 pub fn test_runner(tests: &[&dyn Fn()]) {
     serial_println!("Running {} tests", tests.len());
@@ -84,6 +87,11 @@ pub fn hlt_loop() -> ! {
         x86_64::instructions::hlt();
     }
 }
+
+lazy_static! {
+  pub static ref Mech: Mutex<Core> = Mutex::new(Core::new(1000, 10));
+}
+
 
 pub fn init() {
     gdt::init();

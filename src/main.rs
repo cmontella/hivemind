@@ -9,7 +9,6 @@ extern crate bootloader;
 extern crate x86_64;
 #[macro_use]
 extern crate alloc;
-extern crate mech_core;
 
 use hivemind::println;
 use hivemind::memory::{self, BootInfoFrameAllocator};
