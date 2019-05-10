@@ -12,6 +12,10 @@ use core::panic::PanicInfo;
 use x86_64::registers::control::Cr3;
 use bootloader::{BootInfo, entry_point};
 use hivemind::println;
+use hivemind::memory::{translate_addr};
+use hivemind::memory;
+use x86_64::structures::paging::{Page, PageTable, PhysFrame, MapperAllSizes, MappedPageTable};
+use x86_64::{PhysAddr, VirtAddr};
 
 entry_point!(kernel_main);
 
@@ -20,14 +24,19 @@ entry_point!(kernel_main);
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Hello World{}", "!");
 
-    hivemind::init(); // new
+    hivemind::init();
 
+    let mut mapper = unsafe { memory::init(boot_info.physical_memory_offset) };
+    let mut frame_allocator = memory::EmptyFrameAllocator;
 
-    let (level_4_page_table, _) = Cr3::read();
-    println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
+    // map a previously unmapped page
+    let page = Page::containing_address(VirtAddr::new(0x1000));
+    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
 
+    // write the string `New!` to the screen through the new mapping
+    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e)};
 
-    // as before
     #[cfg(test)]
     test_main();
 
