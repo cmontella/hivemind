@@ -2,6 +2,8 @@
 #![cfg_attr(test, no_main)]
 #![feature(abi_x86_interrupt)]
 #![feature(custom_test_frameworks)]
+#![feature(allocator_api)]
+#![feature(alloc_error_handler)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
@@ -13,18 +15,22 @@ extern crate uart_16550;
 extern crate pic8259_simple;
 extern crate pc_keyboard;
 extern crate bootloader;
+extern crate alloc;
+extern crate linked_list_allocator;
 
 use core::panic::PanicInfo;
 use core::fmt::Write;
 use x86_64::instructions::port::Port;
 #[cfg(test)]
 use bootloader::{entry_point, BootInfo};
+use linked_list_allocator::LockedHeap;
 
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
 pub mod gdt;
 pub mod memory;
+pub mod heap_allocator;
 
 pub fn test_runner(tests: &[&dyn Fn()]) {
     serial_println!("Running {} tests", tests.len());
@@ -85,3 +91,10 @@ pub fn init() {
     unsafe { interrupts::PICS.lock().initialize() };
     x86_64::instructions::interrupts::enable();
 }
+
+
+pub const HEAP_START: usize = 0o_000_001_000_000_0000;
+pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
+
+#[global_allocator]
+static HEAP_ALLOCATOR: LockedHeap = LockedHeap::empty();
