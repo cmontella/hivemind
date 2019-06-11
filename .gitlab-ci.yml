@@ -3,7 +3,7 @@ image: "rust:latest"
 test:cargo:
   script:
   - apt-get update
-  - apt-get install qemu-system
+  - apt-get -y install qemu-system
   - rustup default nightly-2019-05-07
   - rustup show
   - rustc --version && cargo --version
