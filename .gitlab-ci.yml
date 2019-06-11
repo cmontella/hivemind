@@ -2,6 +2,7 @@ image: "rust:latest"
 
 test:cargo:
   script:
+  - apt-get update
   - apt-get install qemu-system
   - rustup default nightly-2019-05-07
   - rustup show
