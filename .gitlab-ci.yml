@@ -9,3 +9,4 @@ test:cargo:
   - rustup component add llvm-tools-preview
   - cargo install cargo-xbuild
   - cargo install bootimage --version "^0.7.3"
+  - cargo xtest
