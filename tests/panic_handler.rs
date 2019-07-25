@@ -2,6 +2,8 @@
 #![no_main]
 #![feature(panic_info_message)]
 
+extern crate hivemind;
+
 use hivemind::{exit_qemu, serial_print, serial_println, QemuExitCode};
 use core::{
     fmt::{self, Write},
@@ -19,7 +21,7 @@ pub extern "C" fn _start() -> ! {
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    check_location(info);
+    //check_location(info);
     check_message(info);
 
     serial_println!("[ok]");
@@ -34,7 +36,7 @@ fn fail(error: &str) -> ! {
     loop {}
 }
 
-fn check_location(info: &PanicInfo) {
+/*fn check_location(info: &PanicInfo) {
     let location = info.location().unwrap_or_else(|| fail("no location"));
     if location.file() != file!() {
         fail("file name wrong");
@@ -42,7 +44,7 @@ fn check_location(info: &PanicInfo) {
     if location.line() != PANIC_LINE {
         fail("file line wrong");
     }
-}
+}*/
 
 fn check_message(info: &PanicInfo) {
     let message = info.message().unwrap_or_else(|| fail("no message"));

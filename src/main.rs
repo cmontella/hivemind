@@ -5,11 +5,13 @@
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
+extern crate hivemind;
 
 use alloc::{boxed::Box, rc::Rc, vec, vec::Vec};
 use hivemind::println;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
+extern crate bootloader;
 
 entry_point!(kernel_main);
 

@@ -2,6 +2,10 @@
 #![no_main]
 #![feature(abi_x86_interrupt)]
 
+extern crate hivemind;
+extern crate lazy_static;
+extern crate x86_64;
+
 use hivemind::{exit_qemu, serial_print, serial_println, QemuExitCode};
 use core::panic::PanicInfo;
 use lazy_static::lazy_static;

@@ -7,6 +7,15 @@
 #![reexport_test_harness_main = "test_main"]
 
 extern crate alloc;
+extern crate linked_list_allocator;
+extern crate x86_64;
+extern crate lazy_static;
+extern crate pic8259_simple;
+extern crate uart_16550;
+extern crate pc_keyboard;
+extern crate bootloader;
+extern crate spin;
+extern crate volatile;
 
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
