@@ -6,11 +6,16 @@
 
 extern crate alloc;
 extern crate hivemind;
+extern crate mech_core;
+#[macro_use]
+extern crate lazy_static;
+extern crate spin;
 
 use alloc::{boxed::Box, rc::Rc, vec, vec::Vec};
 use hivemind::println;
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
+use spin::Mutex;
 extern crate bootloader;
 
 entry_point!(kernel_main);
