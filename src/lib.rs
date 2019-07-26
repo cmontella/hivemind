@@ -6,9 +6,11 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+#[macro_use]
 extern crate alloc;
 extern crate linked_list_allocator;
 extern crate x86_64;
+#[macro_use]
 extern crate lazy_static;
 extern crate pic8259_simple;
 extern crate uart_16550;
@@ -16,9 +18,12 @@ extern crate pc_keyboard;
 extern crate bootloader;
 extern crate spin;
 extern crate volatile;
+extern crate mech_core;
 
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
+use spin::Mutex;
+use alloc::vec::Vec;
 
 pub mod allocator;
 pub mod gdt;
@@ -29,6 +34,14 @@ pub mod vga_buffer;
 
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+lazy_static! {
+  pub static ref HiveCore: Mutex<mech_core::Core> = Mutex::new(mech_core::Core::new(1000, 10));
+}
+
+lazy_static! {
+    static ref Time: Mutex<Vec<u64>> = Mutex::new(vec![0]);
+}
 
 pub fn init() {
     gdt::init();

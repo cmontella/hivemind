@@ -9,6 +9,11 @@ use lazy_static::lazy_static;
 use pic8259_simple::ChainedPics;
 use spin;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
+use ::HiveCore;
+use ::Time;
+use mech_core::{Transaction, Change, Table, Value, Hasher, Index};
+use alloc::vec::Vec;
+use alloc::string::ToString;
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
@@ -79,7 +84,14 @@ extern "x86-interrupt" fn double_fault_handler(
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
-    print!(".");
+    let timer: u64 = Hasher::hash_str("timer");
+    let time = Time.lock()[0];
+    let txn = Transaction::from_changeset(vec![
+        Change::NewTable{ id: timer, rows: 10, columns: 10 },
+        Change::Set{table: timer, row: Index::Index(1), column: Index::Index(1), value: Value::from_u64(time)}
+    ]);
+    Time.lock()[0] = time + 1;
+    HiveCore.lock().process_transaction(&txn);
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer.as_u8());
@@ -103,12 +115,20 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut Interrup
     if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
         if let Some(key) = keyboard.process_keyevent(key_event) {
             match key {
-                DecodedKey::Unicode(character) => print!("{}", character),
+                DecodedKey::Unicode(character) => {
+                    let keypress: u64 = Hasher::hash_str("keypress");
+                    let timer: u64 = Hasher::hash_str("timer");
+                    let txn = Transaction::from_changeset(vec![
+                        Change::NewTable{ id: keypress, rows: 10, columns: 10 },
+                        Change::Set{table: keypress, row: Index::Index(1), column: Index::Index(1), value: Value::from_str(&character.to_string())}
+                    ]);
+                    HiveCore.lock().process_transaction(&txn);
+                    println!("{:?}", HiveCore.lock().store.get_table(timer).unwrap().data[0][0]);
+                },
                 DecodedKey::RawKey(key) => print!("{:?}", key),
             }
         }
     }
-
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
